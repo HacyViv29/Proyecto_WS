@@ -2,6 +2,7 @@
     "require": {
         "slim/slim": "4.8.0",
         "slim/psr7": "^1.8",
-        "slim/http": "^1.4"
+        "slim/http": "^1.4",
+        "kreait/firebase-php": "^5.26"
     }
 }
