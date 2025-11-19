@@ -21,28 +21,32 @@ function create_document($project, $collection, $document) {
 }
 
 $proyecto = 'conectabuapws-default-rtdb';
-$coleccion = 'Usuarios';
+$coleccion = 'Suscripciones';
 
 $data = '{
     "pruebas1": {
-        "nombre": "Manuel",
-        "pass": "de88e3e4ab202d87754078cbb2df6063",
-        "rol": "admin"
+        "usuarios": true,
+        "libros": true,
+        "revistas": false,
+        "periodicos": true
     },
     "pruebas2": {
-        "nombre": "Ana",
-        "pass": "6796ebbb111298d042de1a20a7b9b6eb",
-        "rol": "user"
+        "usuarios": true,
+        "libros": true,
+        "revistas": false,
+        "periodicos": true
     },
     "pruebas3": {
-        "nombre": "Carlos",
-        "pass": "f7e999012e3700d47e6cb8700ee9cf19",
-        "rol": "user"
+        "usuarios": true,
+        "libros": true,
+        "revistas": false,
+        "periodicos": true
     },
     "pruebas4": {
-        "nombre": "Diana",
-        "pass": "'.md5('12345678d').'",
-        "rol": "user"
+        "usuarios": true,
+        "libros": true,
+        "revistas": false,
+        "periodicos": true
     }
 }';
 
