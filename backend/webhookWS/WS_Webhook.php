@@ -7,6 +7,10 @@ header("Content-Type: application/json");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
+    echo json_encode([
+        "success" => true,
+        "message" => "Solo se permiten solicitudes POST"
+    ]);
     exit;
 }
 
@@ -43,7 +47,6 @@ $nuevo_usuario = $data["nuevo_usuario"] ?? null;
 /* ==========================================================
    2. URL DEL MICROSERVICIO DE SUSCRIPCIONES
    ========================================================== */
-
 $BASE = "http://localhost/Servicios%20Web/Proyecto%20Final/backend/suscripcionesWS/WS_suscripciones.php";
 
 /* ==========================================================
@@ -51,30 +54,25 @@ $BASE = "http://localhost/Servicios%20Web/Proyecto%20Final/backend/suscripciones
    ========================================================== */
 function ms_get($endpoint) {
     global $BASE;
-
-    // IMPORTANTÍSIMO: si tu endpoint es /suscripciones
-    // este es el ÚNICO formato que Slim acepta SIN 404
     $url = $BASE . "/suscripciones" . $endpoint;
 
     $result = @file_get_contents($url);
 
     if ($result === false) {
-        return null; // Para evitar warnings
+        return null;
     }
 
     return json_decode($result, true);
 }
 
 /* ==========================================================
-   4. Caso especial: nuevo usuario (notificar a quienes tengan 'usuarios')
+   4. Caso especial: NUEVO USUARIO
    ========================================================== */
-
 if ($accion === "nuevo_usuario" && $nuevo_usuario) {
 
-    // Obtener TODAS las suscripciones:
     $usuariosData = ms_get("");
 
-    if (!$usuariosData || !isset($usuariosData["data"])) {
+    if (!$usuariosData || !isset($usuariosData["data"]["suscripciones"])) {
         http_response_code(500);
         echo json_encode([
             "success" => false,
@@ -83,14 +81,15 @@ if ($accion === "nuevo_usuario" && $nuevo_usuario) {
         exit;
     }
 
+    $suscripciones = $usuariosData["data"]["suscripciones"];
     $notificados = [];
 
-    foreach ($usuariosData["data"] as $usuarioInfo) {
-        $usuario = $usuarioInfo["usuario"];
+    foreach ($suscripciones as $usuario => $subs) {
 
         if ($usuario === $nuevo_usuario) continue;
 
-        if (!empty($usuarioInfo["suscripciones"]["usuarios"])) {
+        // Notificar solo a usuarios con suscripción "usuarios"
+        if (!empty($subs["usuarios"])) {
             $notificados[] = $usuario;
         }
     }
@@ -107,12 +106,12 @@ if ($accion === "nuevo_usuario" && $nuevo_usuario) {
 }
 
 /* ==========================================================
-   5. Caso: nuevo contenido (libros, periódicos, revistas)
+   5. Caso: NUEVO CONTENIDO (libros, periódicos, revistas)
    ========================================================== */
 
 $dataSuscripciones = ms_get("");
 
-if (!$dataSuscripciones || !isset($dataSuscripciones["data"])) {
+if (!$dataSuscripciones || !isset($dataSuscripciones["data"]["suscripciones"])) {
     http_response_code(500);
     echo json_encode([
         "success" => false,
@@ -121,11 +120,14 @@ if (!$dataSuscripciones || !isset($dataSuscripciones["data"])) {
     exit;
 }
 
+$suscripciones = $dataSuscripciones["data"]["suscripciones"];
 $notificados = [];
 
-foreach ($dataSuscripciones["data"] as $usuarioInfo) {
-    if (!empty($usuarioInfo["suscripciones"][$categoria])) {
-        $notificados[] = $usuarioInfo["usuario"];
+foreach ($suscripciones as $usuario => $subs) {
+
+    // Si esa categoría está activa para el usuario → se notifica
+    if (!empty($subs[$categoria])) {
+        $notificados[] = $usuario;
     }
 }
 
