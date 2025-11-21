@@ -1,0 +1,9 @@
+
+backend/authWS/config/__pycache__/*
+
+backend/authWS/__pycache__/*
+backend/authWS/api/__pycache__/*
+backend/authWS/config/__pycache__/*
+backend/authWS/migrations/*
+backend/authWS/models/__pycache__/*
+backend/authWS/schemas/__pycache__/*
