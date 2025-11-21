@@ -20,7 +20,7 @@ function create_document($project, $collection, $document) {
     return json_decode($response);
 }
 
-$proyecto = 'conectabuapws-default-rtdb';
+$proyecto = 'suscripconectbuap-default-rtdb';
 $coleccion = 'Suscripciones';
 
 $data = '{

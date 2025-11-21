@@ -9,21 +9,54 @@ use Kreait\Firebase\Factory;
 
 $factory = (new Factory)
     // Ruta al JSON que descargaste de Firebase
-    ->withServiceAccount(__DIR__ . '/../firebase/JSON_key/conectabuapws-firebase-adminsdk-fbsvc-1b605a7413.json') 
+    ->withServiceAccount(__DIR__ . '/../firebase/JSON_key/Suscripciones/suscripconectbuap-firebase-adminsdk-fbsvc-6977949909.json') 
     // URL de tu Realtime Database
-    ->withDatabaseUri('https://conectabuapws-default-rtdb.firebaseio.com/');
+    ->withDatabaseUri('https://suscripconectbuap-default-rtdb.firebaseio.com/');
 
 $database = $factory->createDatabase();
 
 $suscripcionesWS = AppFactory::create();
 $suscripcionesWS->setBasePath('/Servicios Web/Proyecto Final/backend/suscripcionesWS/WS_suscripciones.php');
 
+$suscripcionesWS->get('/suscripciones', function (Request $request, Response $response, array $args) use ($database) {
+    try {
+        
+        // Obtener suscripciones del usuario
+        $suscripciones = $database->getReference("Suscripciones")->getValue();
+        
+        $data = [
+            'status' => 'success',
+            'message' => 'Suscripciones obtenidas correctamente',
+            'data' => [
+                'suscripciones' => $suscripciones ?: [
+                    'libros' => false,
+                    'periodicos' => false,
+                    'revistas' => false,
+                    'usuarios' => false
+                ]
+            ]
+        ];
+        
+        $response->getBody()->write(json_encode($data));
+        return $response->withHeader('Content-Type', 'application/json');
+        
+    } catch (Exception $e) {
+        $errorData = [
+            'status' => 'error',
+            'message' => 'Error al obtener suscripciones: ' . $e->getMessage()
+        ];
+        
+        $response->getBody()->write(json_encode($errorData));
+        return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+    }
+});
+
 $suscripcionesWS->get('/suscripciones/{usuario}', function (Request $request, Response $response, array $args) use ($database) {
     try {
         $usuario = $args['usuario'];
         
         // Verificar si el usuario existe
-        $usuarioData = $database->getReference("Usuarios/{$usuario}")->getValue();
+        $usuarioData = $database->getReference("Suscripciones/{$usuario}")->getValue();
         if (!$usuarioData) {
             $errorData = [
                 'status' => 'error',
@@ -83,7 +116,7 @@ $suscripcionesWS->post('/suscripciones/{usuario}/suscribir', function (Request $
         $tipo = $body['tipo'];
         
         // Verificar si el usuario existe
-        $usuarioData = $database->getReference("Usuarios/{$usuario}")->getValue();
+        $usuarioData = $database->getReference("Suscripciones/{$usuario}")->getValue();
         if (!$usuarioData) {
             $errorData = [
                 'status' => 'error',
@@ -153,7 +186,7 @@ $suscripcionesWS->post('/suscripciones/{usuario}/desuscribir', function (Request
         $tipo = $body['tipo'];
         
         // Verificar si el usuario existe
-        $usuarioData = $database->getReference("Usuarios/{$usuario}")->getValue();
+        $usuarioData = $database->getReference("Suscripciones/{$usuario}")->getValue();
         if (!$usuarioData) {
             $errorData = [
                 'status' => 'error',

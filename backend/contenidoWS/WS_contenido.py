@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+import requests
 from typing import Dict, List, Optional, Any
 import firebase_admin
 from firebase_admin import credentials, db
@@ -9,9 +9,9 @@ import os
 from models.Modelos import ProductoCreate, ProductoUpdate, ResponseModel, Detalles
 
 # Inicializar Firebase
-cred = credentials.Certificate(os.path.join(os.path.dirname(__file__), "../firebase/JSON_key/conectabuapws-firebase-adminsdk-fbsvc-1b605a7413.json"))
+cred = credentials.Certificate(os.path.join(os.path.dirname(__file__), "../firebase/JSON_key/Contenido/contenidoconectbuap-firebase-adminsdk-fbsvc-8c1c9acf4d.json"))
 firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://conectabuapws-default-rtdb.firebaseio.com/'
+    'databaseURL': 'https://contenidoconectbuap-default-rtdb.firebaseio.com/'
 })
 
 app = FastAPI()
@@ -88,7 +88,7 @@ async def obtener_por_categoria(categoria: str):
 async def crear_producto(producto: ProductoCreate):
     try:
         # Validar categoría
-        categorias_validas = ['comics', 'libros', 'mangas']
+        categorias_validas = ['libros', 'revistas', 'periodicos']
         if producto.categoria not in categorias_validas:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -113,7 +113,35 @@ async def crear_producto(producto: ProductoCreate):
         
         # Agregar a Detalles
         ref_detalles.set(producto.detalles.dict())
-        
+
+        # =====================================
+        #        DISPARAR WEBHOOK AQUÍ
+        # =====================================
+        payload = {
+            "categoria": producto.categoria,
+            "accion": "nuevo_contenido",
+            "isbn": producto.isbn,
+            "nombre": producto.nombre
+        }
+
+        webhook_url = "http://localhost/Servicios Web/Proyecto Final/backend/webhookWS/WS_Webhook.php"
+
+        try:
+            response = requests.post(
+                webhook_url,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=5
+            )
+            # (Opcional) imprimir respuesta del webhook
+            print("Webhook status:", response.status_code)
+            print("Webhook response:", response.text)
+
+        except Exception as werror:
+            print("⚠️ Error enviando webhook:", str(werror))
+        # =====================================
+
+        # Respuesta final a cliente
         return {
             "status": "success",
             "message": "Contenido agregado correctamente",
@@ -124,6 +152,7 @@ async def crear_producto(producto: ProductoCreate):
                 "detalles": producto.detalles.dict()
             }
         }
+
     except HTTPException:
         raise
     except Exception as e:

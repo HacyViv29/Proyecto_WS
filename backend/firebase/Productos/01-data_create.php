@@ -20,7 +20,7 @@ function create_document($project, $collection, $document) {
     return json_decode($response);
 }
 
-$proyecto = 'conectabuapws-default-rtdb';
+$proyecto = 'contenidoconectbuap-default-rtdb';
 $coleccion = 'Productos';
 
 $data = '{
@@ -39,10 +39,10 @@ if( !is_null($res) ) {
 }
 
 $data = '{
-    "comics": {
-        "COM001": "The Amazing Spiderman",
-        "COM002": "All-Star Superman",
-        "COM003": "Batman: The Dark Knight Returns"
+    "revistas": {
+        "REV001": "science",
+        "REV002": "Muy interesante",
+        "REV003": "National Geographic"
     }
 }';
 
@@ -54,10 +54,10 @@ if( !is_null($res) ) {
 }
 
 $data = '{
-    "mangas": {
-        "MAN001": "Dragon Ball",
-        "MAN002": "Neo Genesis Evangelion",
-        "MAN003": "Mazinger Z"
+    "periodicos": {
+        "PER001": "El sol de México",
+        "PER002": "El universal",
+        "PER003": "La jornada"
     }
 }';
 
