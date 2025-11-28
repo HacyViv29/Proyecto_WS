@@ -11,6 +11,7 @@ async def register(body: UserPost):
     body.password_hash = pwd_context.hash(body.password_hash)
     # turn play_load into dict
     data = body.model_dump(by_alias=False, exclude_unset=True)
+    
     # check if email is taken
     existing = await User.filter(email=body.email).exists()
     if existing:
@@ -20,8 +21,10 @@ async def register(body: UserPost):
         )
     # create the user
     user_object = await User.create(**data)
-    # return created user
+    
+    # return created user using our custom helper in schemas/user.py
     user = await UserGet.from_tortoise_orm(user_object)
+    
     # get the created user:id
     user_id = user.model_dump()['id']
     return {"message": "user created successfully", "user_id": user_id}
@@ -49,7 +52,7 @@ async def login(body: UserLogin):
     refresh_token = create_refresh_jwt(data)
     
     # store the refresh token in memory || database || any storage
-    # users-table - database
+    # AQUI SE ACTUALIZA EN FIREBASE (PATCH)
     await User.filter(email=body.email).update(**{'refresh_token': refresh_token})
     
     return {
@@ -68,4 +71,5 @@ async def refresh(token_data: dict = Depends(authorize)):
 
 @auth_router.get('/data')
 async def protected_data(user: User = Depends(verified_user)):
-    return {'status': 'authorized', 'user': user}
+    # Convertimos el objeto User a dict para el retorno JSON
+    return {'status': 'authorized', 'user': user.__dict__}

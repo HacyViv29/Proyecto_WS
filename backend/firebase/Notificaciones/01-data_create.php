@@ -24,25 +24,19 @@ $proyecto = 'suscripconectbuap-default-rtdb';
 $coleccion = 'Suscripciones';
 
 $data = '{
-    "pruebas1": {
+    "marydoe@mail,com": {
         "usuarios": true,
         "libros": true,
         "revistas": false,
         "periodicos": true
     },
-    "pruebas2": {
+    "marydoe2@mail,com": {
         "usuarios": true,
         "libros": true,
         "revistas": false,
         "periodicos": true
     },
-    "pruebas3": {
-        "usuarios": true,
-        "libros": true,
-        "revistas": false,
-        "periodicos": true
-    },
-    "pruebas4": {
+    "hacyviv29@gmail,com": {
         "usuarios": true,
         "libros": true,
         "revistas": false,
