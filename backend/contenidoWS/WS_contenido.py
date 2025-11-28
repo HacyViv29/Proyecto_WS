@@ -33,39 +33,37 @@ async def obtener_productos():
             detail=f"Error al obtener productos: {str(e)}"
         )
 
-@app.get("/contenido/{nombre}", response_model=ResponseModel)
-async def buscar_producto(nombre: str):
+@app.get("/contenido/detalles/{isbn}", response_model=ResponseModel)
+async def obtener_detalles_por_isbn(isbn: str):
+    """
+    Regresa los detalles del libro según el ISBN dentro de Detalles/.
+    """
     try:
-        ref = db.reference('Productos')
-        productos = ref.get()
-        
-        resultados = []
-        termino = nombre.lower()
-        
-        if productos:
-            for categoria, items in productos.items():
-                if items:
-                    for id_producto, nombre_producto in items.items():
-                        if termino in nombre_producto.lower():
-                            resultados.append({
-                                'id': id_producto,
-                                'categoria': categoria,
-                                'nombre': nombre_producto,
-                                'tipo': categoria
-                            })
-        
+        ref = db.reference(f'Detalles/{isbn}')
+        detalles = ref.get()
+
+        if not detalles:
+            return {
+                "status": "success",
+                "message": f"No se encontraron detalles para el ISBN '{isbn}'",
+                "data": {}
+            }
+
         return {
             "status": "success",
-            "message": f"{len(resultados)} resultados encontrados para '{termino}'",
-            "termino_busqueda": termino,
-            "total_resultados": len(resultados),
-            "data": resultados
+            "message": f"Detalles encontrados para ISBN '{isbn}'",
+            "data": {
+                "isbn": isbn,
+                "detalles": detalles
+            }
         }
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error en la búsqueda: {str(e)}"
+            detail=f"Error al obtener detalles por ISBN: {str(e)}"
         )
+
 
 @app.get("/contenido/categoria/{categoria}", response_model=ResponseModel)
 async def obtener_por_categoria(categoria: str):
@@ -83,6 +81,26 @@ async def obtener_por_categoria(categoria: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al obtener productos por categoría: {str(e)}"
         )
+
+@app.get("/contenido/detalles", response_model=ResponseModel)
+async def obtener_todos_detalles():
+    """Regresa todos los detalles de la colección Detalles/"""
+    try:
+        ref = db.reference('Detalles')
+        detalles = ref.get()
+
+        return {
+            "status": "success",
+            "message": "Detalles obtenidos correctamente",
+            "data": detalles if detalles else {}
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener detalles: {str(e)}"
+        )
+
 
 @app.post("/contenido", response_model=ResponseModel, status_code=status.HTTP_201_CREATED)
 async def crear_producto(producto: ProductoCreate):
