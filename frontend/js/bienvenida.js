@@ -7,7 +7,7 @@ if (!token) {
 }
 
 document.getElementById("btnLogout").addEventListener("click", () => {
-    localStorage.clear(); // Borra todo (token, refresh, user, etc)
+    localStorage.clear();
     window.location.href = "login.html";
 });
 
@@ -17,17 +17,19 @@ let listaCompleta = [];
 
 async function cargarContenidos() {
     try {
-        // Petición al Gateway con Headers de Seguridad
-        const res = await fetch("http://localhost:8000/contenido", {
+        console.log("📡 Iniciando petición a /contenido/detalles...");
+        
+        const res = await fetch("http://localhost:8000/contenido/detalles", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`,
-                "X-Refresh-Token": refreshToken || "" // Enviamos el refresh para que el Gateway renueve si hace falta
+                "X-Refresh-Token": refreshToken || ""
             }
         });
 
-        // 1. Verificar si el Gateway nos rechazó (Token inválido)
+        console.log("Estado de respuesta:", res.status);
+
         if (res.status === 401) {
             alert("Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
             localStorage.clear();
@@ -36,63 +38,94 @@ async function cargarContenidos() {
         }
 
         if (!res.ok) {
-            throw new Error("Error al obtener contenidos");
+            throw new Error(`Error del servidor: ${res.statusText}`);
         }
 
-        // 2. Lógica de Renovación de Token (Gateway Pattern)
-        // Si el gateway renovó el token, vendrá en los headers de respuesta
+        // Renovación de tokens
         const newToken = res.headers.get("x-new-access-token");
         const newRefresh = res.headers.get("x-new-refresh-token");
-
         if (newToken) {
-            console.log("🔄 Token renovado automáticamente por el Gateway");
+            console.log("🔄 Token renovado");
             localStorage.setItem("token", newToken);
             if (newRefresh) localStorage.setItem("refresh_token", newRefresh);
         }
 
-        const data = await res.json();
+        const responseBody = await res.json();
+        console.log("📦 Datos recibidos:", responseBody);
 
-        // Procesar datos (igual que antes)
-        listaCompleta = [
-            ...convertir("libro", data.data.libros || {}),
-            ...convertir("revista", data.data.revistas || {}),
-            ...convertir("periodico", data.data.periodicos || {})
-        ];
+        const dataObjects = responseBody.data || {};
+        const keys = Object.keys(dataObjects);
 
+        if (keys.length === 0) {
+            console.warn("⚠️ La respuesta no contiene datos en 'data'");
+            contenedor.innerHTML = "<p class='text-center mt-5'>No se encontraron contenidos.</p>";
+            return;
+        }
+
+        listaCompleta = keys.map(key => {
+            const item = dataObjects[key];
+            
+            // Determinar tipo
+            let tipoItem = "otro";
+            if (key.startsWith("LIB")) tipoItem = "libro";
+            else if (key.startsWith("REV")) tipoItem = "revista";
+            else if (key.startsWith("PER")) tipoItem = "periodico";
+
+            // CORRECCIÓN PRINCIPAL: Manejo seguro de campos faltantes o mal escritos
+            return {
+                id: key,
+                // Busca "Título" O "Titulo" (con o sin acento)
+                titulo: item.Título || item.Titulo || "Sin Título", 
+                autor: item.Autor || "Desconocido",
+                editorial: item.Editorial || "Editorial desconocida",
+                fecha: item.Fecha || "s/f",
+                // Si no hay img, enviamos null para que el renderizador use la default
+                imagen: item.img || null,
+                tipo: tipoItem
+            };
+        });
+
+        console.log("✅ Lista procesada:", listaCompleta);
         renderizar(listaCompleta);
 
     } catch (error) {
-        console.error(error);
-        alert("No se pudo conectar con el sistema.");
+        console.error("❌ Error grave en cargarContenidos:", error);
+        contenedor.innerHTML = `<p class='text-danger text-center'>Error cargando datos: ${error.message}</p>`;
     }
 }
 
-// ... (El resto de las funciones 'convertir', 'renderizar' y filtros quedan IGUAL)
-function convertir(tipo, objeto) {
-    return Object.keys(objeto).map(key => ({
-        id: key,
-        titulo: objeto[key],
-        autor: "Desconocido", // Tu endpoint actual solo devuelve título
-        tipo: tipo
-    }));
-}
-
-// Ejecutar carga
-cargarContenidos();
-
-// ... (Mantén el resto de tu código de renderizado y filtros aquí abajo)
 function renderizar(lista) {
     contenedor.innerHTML = "";
+    
+    if(!lista || lista.length === 0){
+        contenedor.innerHTML = "<p>No hay elementos para mostrar.</p>";
+        return;
+    }
+
     lista.forEach(item => {
+        // Usar imagen real si existe, sino default
+        const imagenSrc = item.imagen ? `images/${item.imagen}` : 'images/default.jpg';
+
         contenedor.innerHTML += `
             <div class="col">
                 <div class="card h-100 shadow-sm border-0 book-card">
-                    <img src="images/default.jpg" class="card-img-top" alt="${item.titulo}">
-                    <div class="card-body p-3">
-                        <h5 class="card-title fw-bold mb-0">${item.titulo}</h5>
-                        <p class="card-text text-muted small mb-2">${item.autor}</p>
-                        <div class="d-flex justify-content-between align-items-center mt-auto">
-                            <span class="badge category-badge bg-primary">${item.tipo}</span>
+                    
+                    <img src="${imagenSrc}" 
+                         class="card-img-top" 
+                         alt="${item.titulo}" 
+                         style="height: 250px; object-fit: cover;"
+                         onerror="this.onerror=null; this.src='images/default.jpg';"> 
+                    
+                    <div class="card-body p-3 d-flex flex-column">
+                        <h5 class="card-title fw-bold mb-0 text-truncate" title="${item.titulo}">${item.titulo}</h5>
+                        <p class="card-text text-muted small mb-1">Por: ${item.autor}</p>
+                        <p class="card-text text-muted small mb-2" style="font-size: 0.8rem;">
+                            Ed. ${item.editorial} (${item.fecha})
+                        </p>
+                        
+                        <div class="mt-auto d-flex justify-content-between align-items-center">
+                            <span class="badge category-badge bg-primary text-uppercase">${item.tipo}</span>
+                            <button class="btn btn-sm btn-outline-secondary">Ver más</button>
                         </div>
                     </div>
                 </div>
@@ -101,25 +134,25 @@ function renderizar(lista) {
     });
 }
 
-// Event Listeners de Filtros y Buscador (Igual que tu original)
+// Event Listeners (Filtros y Buscador)
 document.querySelectorAll(".filter-tabs button").forEach(btn => {
     btn.addEventListener("click", () => {
         document.querySelector(".active-tab").classList.remove("active-tab");
         btn.classList.add("active-tab");
         const filtro = btn.dataset.filter;
-        if (filtro === "todo") {
-            renderizar(listaCompleta);
-        } else {
-            const filtrados = listaCompleta.filter(item => item.tipo === filtro);
-            renderizar(filtrados);
-        }
+        
+        if (filtro === "todo") renderizar(listaCompleta);
+        else renderizar(listaCompleta.filter(item => item.tipo === filtro));
     });
 });
 
 document.getElementById("searchInput").addEventListener("input", e => {
     const texto = e.target.value.toLowerCase();
-    const filtrados = listaCompleta.filter(item =>
-        item.titulo.toLowerCase().includes(texto)
-    );
-    renderizar(filtrados);
+    renderizar(listaCompleta.filter(item =>
+        item.titulo.toLowerCase().includes(texto) || 
+        item.autor.toLowerCase().includes(texto)
+    ));
 });
+
+// Iniciar
+cargarContenidos();
