@@ -16,12 +16,12 @@ document.getElementById("createForm").addEventListener("submit", async function(
         return;
     }
 
-    // Separar nombre en 2 partes
     const partes = nombre.split(" ");
     const first_name = partes[0];
     const last_name = partes.slice(1).join(" ") || " ";
 
     try {
+        // Apuntando al Gateway
         const response = await fetch("http://localhost:8000/api/v1/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -34,7 +34,8 @@ document.getElementById("createForm").addEventListener("submit", async function(
         });
 
         if (!response.ok) {
-            alert("No se pudo crear el usuario");
+            const err = await response.json();
+            alert("Error: " + (err.detail || "No se pudo crear el usuario"));
             return;
         }
 
