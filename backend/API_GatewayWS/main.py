@@ -1,6 +1,6 @@
 import time
 import httpx
-from fastapi import FastAPI, Request, status, Response
+from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 from jose import jwt, JWTError
 
@@ -12,20 +12,18 @@ ALGORITHM = "HS256"
 MICROSERVICES = {
     "auth": "http://localhost:8001",
     "contenido": "http://localhost:8002",
-    # Base común para tus archivos en XAMPP
     "php_base": "http://localhost/Servicios Web/Proyecto Final/backend"
 }
 
 app = FastAPI(title="API Gateway ConectBUAP")
 client = httpx.AsyncClient()
 
-# Rutas públicas (No requieren token)
+# Rutas públicas
 PUBLIC_ROUTES = [
     "/api/v1/login",
     "/api/v1/register",
     "/docs",
-    "/openapi.json",
-    "/webhook" # Generalmente los webhooks son públicos o tienen su propia firma
+    "/openapi.json"
 ]
 
 async def renew_token_if_needed(access_token: str, refresh_token: str):
@@ -34,7 +32,6 @@ async def renew_token_if_needed(access_token: str, refresh_token: str):
         exp = payload.get("exp")
         current_time = time.time()
         
-        # Si expira en menos de 5 minutos
         if exp and (exp - current_time) < 300:
             print("🔄 Renovando token...")
             try:
@@ -53,39 +50,48 @@ async def renew_token_if_needed(access_token: str, refresh_token: str):
 
 @app.middleware("http")
 async def gateway_middleware(request: Request, call_next):
+    # ==========================================
+    # 1. MANEJO DE CORS (Solución al error)
+    # ==========================================
+    # Si es una petición OPTIONS, respondemos OK inmediatamente
+    if request.method == "OPTIONS":
+        return Response(
+            status_code=200,
+            headers={
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                "Access-Control-Allow-Headers": "Authorization, Content-Type, X-Refresh-Token",
+            }
+        )
+
     path = request.url.path
-    
-    # --- 1. Determinar el destino (Routing) ---
     url = None
     
-    # A) Rutas de Python (Auth y Contenido)
+    # ==========================================
+    # 2. ENRUTAMIENTO (Routing)
+    # ==========================================
+    
+    # A) Rutas Python
     if path.startswith("/api/v1"):
         url = f"{MICROSERVICES['auth']}{path}"
-        
     elif path.startswith("/contenido"):
         url = f"{MICROSERVICES['contenido']}{path}"
 
-    # B) Rutas de PHP (Mapeo de URLs bonitas a las largas de XAMPP)
-    
-    # Caso: /suscripciones -> WS_suscripciones.php/suscripciones
-    # El Slim framework en PHP espera que la ruta completa incluya el nombre del archivo
+    # B) Rutas PHP
     elif path.startswith("/suscripciones"):
-        # Construimos: Base + carpeta + archivo + ruta solicitada
         url = f"{MICROSERVICES['php_base']}/suscripcionesWS/WS_suscripciones.php{path}"
-        
-    # Caso: /webhook -> WS_Webhook.php
     elif path.startswith("/webhook"):
         url = f"{MICROSERVICES['php_base']}/webhookWS/WS_Webhook.php"
 
     else:
-        # Si no coincide con nada, dejamos que FastAPI maneje el 404 local o Docs
         if path in ["/docs", "/openapi.json"]:
             return await call_next(request)
         return JSONResponse(status_code=404, content={"detail": "Ruta no encontrada en el Gateway"})
 
-    # --- 2. Seguridad (Autenticación) ---
-    # Si NO es pública y NO es OPTIONS, verificamos token
-    if path not in PUBLIC_ROUTES and request.method != "OPTIONS":
+    # ==========================================
+    # 3. SEGURIDAD (Validación JWT)
+    # ==========================================
+    if path not in PUBLIC_ROUTES:
         auth_header = request.headers.get("Authorization")
         refresh_token_header = request.headers.get("X-Refresh-Token")
 
@@ -97,7 +103,7 @@ async def gateway_middleware(request: Request, call_next):
         new_refresh_token = None
 
         try:
-            # Intento de renovación automática
+            # Intento de renovación
             if refresh_token_header:
                 new_a, new_r = await renew_token_if_needed(token, refresh_token_header)
                 if new_a:
@@ -105,27 +111,27 @@ async def gateway_middleware(request: Request, call_next):
                     new_access_token = new_a
                     new_refresh_token = new_r
 
-            # Validar token (actual o renovado)
+            # Validar firma
             jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
         except JWTError:
             return JSONResponse(status_code=401, content={"detail": "Token inválido o expirado"})
 
-        # Inyectar token validado en headers para el microservicio
-        # (Es necesario recrear los headers porque el objeto original es inmutable)
+        # Preparamos headers limpios para el microservicio
         request_headers = dict(request.headers)
         request_headers["Authorization"] = f"Bearer {token}"
         request_headers.pop("host", None) 
         request_headers.pop("content-length", None)
     else:
-        # Si es pública, pasamos headers limpios
         request_headers = dict(request.headers)
         request_headers.pop("host", None)
         request_headers.pop("content-length", None)
         new_access_token = None
         new_refresh_token = None
 
-    # --- 3. Proxy Reverso (Reenvío) ---
+    # ==========================================
+    # 4. PROXY (Reenvío)
+    # ==========================================
     try:
         body = await request.body()
         
@@ -138,14 +144,20 @@ async def gateway_middleware(request: Request, call_next):
             timeout=10.0
         )
 
-        # Construir respuesta para el cliente
+        # Construir respuesta final
         response = Response(
             content=microservice_response.content,
             status_code=microservice_response.status_code,
             headers=dict(microservice_response.headers)
         )
 
-        # Si renovamos token, avisar al frontend
+        # AGREGAR SIEMPRE HEADERS CORS A LA RESPUESTA FINAL
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, X-Refresh-Token"
+        # Exponer headers personalizados para que JS pueda leer los nuevos tokens
+        response.headers["Access-Control-Expose-Headers"] = "X-New-Access-Token, X-New-Refresh-Token"
+
         if new_access_token:
             response.headers["X-New-Access-Token"] = new_access_token
             response.headers["X-New-Refresh-Token"] = new_refresh_token
@@ -154,5 +166,3 @@ async def gateway_middleware(request: Request, call_next):
 
     except httpx.RequestError as exc:
         return JSONResponse(status_code=503, content={"detail": f"Error conectando con microservicio: {str(exc)}"})
-
-# Ejecutar con: uvicorn main:app --reload --port 8000
