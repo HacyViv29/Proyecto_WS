@@ -7,3 +7,9 @@ backend/authWS/config/__pycache__/*
 backend/authWS/migrations/*
 backend/authWS/models/__pycache__/*
 backend/authWS/schemas/__pycache__/*
+
+backend/API_GatewayWS/__pycache__/*
+
+backend/contenidoWS/__pycache__/*
+
+backend/firebase/JSON_Key/*
