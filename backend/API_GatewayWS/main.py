@@ -23,7 +23,8 @@ PUBLIC_ROUTES = [
     "/api/v1/login",
     "/api/v1/register",
     "/docs",
-    "/openapi.json"
+    "/openapi.json",
+    "/webhook"
 ]
 
 async def renew_token_if_needed(access_token: str, refresh_token: str):
