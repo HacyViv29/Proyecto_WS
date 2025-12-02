@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Colaborador</title>
+    <!-- Aunque incluimos todos los CSS, usaremos las clases FAS para los íconos -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<style>
+
+:root {
+    --color-header-bg: #2d416b; /* Azul oscuro para la cabecera, como en la imagen */
+    --color-primary: #3f51b5; /* Azul primario (para botones Add) */
+    --color-light: #ffffff;
+    --color-dark: #333333;
+    --color-background: #f4f6f9;
+    --color-border: #e0e0e0;
+    --color-text-light: #777;
+    --color-badge-libro: #8bc34a; 
+    --color-badge-revista: #e91e63; 
+    --color-icon-edit: #2196f3; 
+    --color-icon-delete: #f44336; 
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color-background);
+    color: var(--color-dark);
+}
+
+.panel-container {
+    min-height: 100vh;
+}
+
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    /* CORRECCIÓN: Usar el color azul oscuro de la imagen */
+    background-color: var(--color-header-bg); 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: var(--color-light); /* Texto blanco para la cabecera */
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+}
+
+.header-logo i {
+    font-size: 24px;
+    color: var(--color-light); 
+    margin-right: 15px;
+}
+
+.logo-text p {
+    font-size: 14px;
+    color: var(--color-light);
+    opacity: 0.8;
+    line-height: 1;
+}
+
+.logo-text h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 2px;
+    line-height: 1;
+    color: var(--color-light); 
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+}
+
+.icon-action {
+    font-size: 18px;
+    color: var(--color-light); 
+    margin-left: 20px;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 5px; 
+    border-radius: 4px;
+}
+
+.icon-action:hover {
+    color: #aeb8d8;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.header-actions .exit-link {
+    display: flex;
+    align-items: center;
+    color: var(--color-light);
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    margin-left: 20px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.header-actions .exit-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.header-actions .exit-link i {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+
+
+.content {
+    padding: 30px;
+}
+
+.summary-card {
+    background-color: var(--color-light);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 250px; 
+    margin-bottom: 30px;
+}
+
+.summary-card p {
+    color: var(--color-text-light);
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.summary-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.summary-count {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--color-dark);
+}
+
+.icon-summary {
+    font-size: 28px;
+    color: var(--color-badge-libro); 
+    background-color: rgba(139, 195, 74, 0.1); 
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.content-section {
+    background-color: var(--color-light);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.content-section h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+}
+
+.filter-select {
+    padding: 8px 15px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    margin-right: 15px;
+    font-size: 14px;
+    background-color: var(--color-light);
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 0 10px;
+    background-color: var(--color-light);
+    width: 300px;
+}
+
+.search-box i {
+    color: var(--color-text-light);
+    margin-right: 8px;
+}
+
+.search-box input {
+    border: none;
+    padding: 8px 0;
+    width: 100%;
+    outline: none;
+    font-size: 14px;
+}
+
+.btn-add-content {
+    background-color: var(--color-primary);
+    color: var(--color-light);
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.btn-add-content:hover {
+    background-color: #303f9f; 
+}
+
+.btn-add-content i {
+    margin-right: 8px;
+}
+
+.content-table-container {
+    overflow-x: auto;
+}
+
+.content-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; 
+}
+
+.content-table th, .content-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.content-table th {
+    background-color: var(--color-background);
+    font-weight: 600;
+    color: var(--color-dark);
+    font-size: 14px;
+}
+
+.content-table td {
+    font-size: 14px;
+    color: var(--color-dark);
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge i {
+    margin-right: 5px;
+    font-size: 10px;
+}
+
+.badge-libro {
+    background-color: var(--color-badge-libro);
+    color: var(--color-light);
+}
+
+.badge-revista {
+    background-color: var(--color-badge-revista);
+    color: var(--color-light);
+}
+
+td[data-label="Vistas"] i {
+    color: var(--color-text-light);
+    margin-right: 5px;
+}
+
+.actions-cell {
+    width: 100px; 
+}
+
+.icon-edit, .icon-delete {
+    cursor: pointer;
+    font-size: 16px;
+    margin-left: 10px;
+    transition: color 0.2s;
+}
+
+.icon-edit {
+    color: var(--color-icon-edit);
+}
+
+.icon-edit:hover {
+    color: #1565c0;
+}
+
+.icon-delete {
+    color: var(--color-icon-delete);
+}
+
+.icon-delete:hover {
+    color: #c62828;
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .header-actions {
+        margin-top: 10px;
+        width: 100%;
+        justify-content: space-around;
+    }
+
+    .content {
+        padding: 15px;
+    }
+
+    .summary-card {
+        width: 100%;
+    }
+
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-group {
+        margin-bottom: 15px;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-select, .search-box {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    .content-table, .content-table thead, .content-table tbody, .content-table th, .content-table td, .content-table tr {
+        display: block;
+    }
+    
+    .content-table thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    
+    .content-table tr {
+        border: 1px solid var(--color-border);
+        margin-bottom: 10px;
+        border-radius: 4px;
+    }
+    
+    .content-table td {
+        border: none;
+        position: relative;
+        padding-left: 50%; 
+        text-align: right;
+    }
+    
+    .content-table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: 600;
+        color: var(--color-text-light);
+    }
+
+    .actions-cell {
+        text-align: center;
+        width: 100%; 
+        padding-left: 0;
+    }
+
+    .actions-cell:before {
+        content: "Acciones";
+    }
+}
+</style>
+<body>
+    <div class="panel-container">
+        <header class="header">
+            <div class="header-logo">
+                <i class="fas fa-book-open"></i> 
+                <div class="logo-text">
+                    <p>Panel de Colaborador</p>
+                    <h1>Mi Contenido Digital</h1>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <i class="fas fa-bell icon-action" title="Notificaciones"></i>
+                <i class="fas fa-cog icon-action" title="Configuración"></i>
+                
+                <a href="#" class="exit-link">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </div>
+
+        </header>
+
+        <main class="content">
+            <div class="summary-card">
+                <p>Total Publicado</p>
+                <div class="summary-details">
+                    <span class="summary-count" id="totalPublicado">2</span>
+                    <i class="fas fa-book icon-summary"></i> 
+                </div>
+            </div>
+
+            <section class="content-section">
+                <h2>Mi Contenido</h2>
+
+                <div class="toolbar">
+                    <div class="filter-group">
+                        <select id="tipoFiltro" class="filter-select">
+                            <option>Todos los tipos</option>
+                            <option>Libro</option>
+                            <option>Revista</option>
+                        </select>
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Buscar en mi contenido..." id="busquedaContenido">
+                        </div>
+                    </div>
+                    <button class="btn-add-content" id="agregarContenido">
+                        <i class="fas fa-plus"></i> Agregar Contenido
+                    </button>
+                </div>
+
+                <div class="content-table-container">
+                    <table class="content-table">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Tipo</th>
+                                <th>Autor</th>
+                                <th>Vistas</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contenidoDinamico">
+                            <tr>
+                                <td data-label="Título">Cien Años de Soledad</td>
+                                <td data-label="Tipo"><span class="badge badge-libro"><i class="fas fa-book"></i> Libro</span></td>
+                                <td data-label="Autor">Gabriel García Márquez</td>
+                                <td data-label="Vistas"><i class="fas fa-eye"></i> 1,523</td>
+                                <td data-label="Acciones" class="actions-cell">
+                                    <i class="fas fa-pen-square icon-edit"></i>
+                                    <i class="fas fa-trash-alt icon-delete"></i>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td data-label="Título">National Geographic</td>
+                                <td data-label="Tipo"><span class="badge badge-revista"><i class="fas fa-journal-whills"></i> Revista</span></td>
+                                <td data-label="Autor">National Geographic Society</td>
+                                <td data-label="Vistas"><i class="fas fa-eye"></i> 892</td>
+                                <td data-label="Acciones" class="actions-cell">
+                                    <i class="fas fa-pen-square icon-edit"></i>
+                                    <i class="fas fa-trash-alt icon-delete"></i>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td data-label="Título">Don Quijote de la Mancha</td>
+                                <td data-label="Tipo"><span class="badge badge-libro"><i class="fas fa-book"></i> Libro</span></td>
+                                <td data-label="Autor">Miguel de Cervantes</td>
+                                <td data-label="Vistas"><i class="fas fa-eye"></i> 0</td>
+                                <td data-label="Acciones" class="actions-cell">
+                                    <i class="fas fa-pen-square icon-edit"></i>
+                                    <i class="fas fa-trash-alt icon-delete"></i>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

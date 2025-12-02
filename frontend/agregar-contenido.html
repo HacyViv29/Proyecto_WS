@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Contenido Digital</title>
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<style>
+    body {
+    font-family: Arial, sans-serif;
+    background-color: var(--color-bg-light);
+    color: var(--color-text);
+    line-height: 1.6;
+    padding: 20px 0;
+}
+
+</style>
+<body>
+
+    <div class="container-agregar">
+        <header class="header-agregar">
+            <i class="fas fa-arrow-left" onclick="goBack()"></i> 
+        <h1><i class="fas fa-book"></i> Agregar Contenido</h1>
+    </header>
+
+        <main class="content-card">
+            <h2>Nuevo Contenido Digital</h2>
+            <p class="subtitle">Completa el formulario para agregar libros, revistas o periódicos a la colección</p>
+            
+            <form action="#" method="POST" class="form-grid">
+                
+                <div class="form-group full-width">
+                    <label for="tipo_contenido">Tipo de Contenido</label>
+                    <div class="select-wrapper">
+                        <select id="tipo_contenido" name="tipo_contenido">
+                            <option value="libro">Libro</option>
+                            <option value="revista">Revista</option>
+                            <option value="periodico">Periódico</option>
+                        </select>
+                        <i class="fas fa-caret-down select-arrow"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="titulo">Título *</label>
+                    <input type="text" id="titulo" name="titulo" placeholder="Ingresa el título" required>
+                </div>
+                <div class="form-group">
+                    <label for="autor_editorial">Autor / Editorial *</label>
+                    <input type="text" id="autor_editorial" name="autor_editorial" placeholder="Ingresa el autor o editorial" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoria">Categoría *</label>
+                    <input type="text" id="categoria" name="categoria" placeholder="Ej: Literatura, Ciencia, Historia" required>
+                </div>
+                <div class="form-group">
+                    <label for="idioma">Idioma</label>
+                    <div class="select-wrapper">
+                        <select id="idioma" name="idioma">
+                            <option value="" disabled selected>Selecciona el idioma</option>
+                            <option value="es">Español</option>
+                            <option value="en">Inglés</option>
+                            </select>
+                        <i class="fas fa-caret-down select-arrow"></i>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="descripcion">Descripción</label>
+                    <textarea id="descripcion" name="descripcion" rows="4" placeholder="Describe brevemente el contenido..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="isbn_issn">ISBN / ISSN</label>
+                    <input type="text" id="isbn_issn" name="isbn_issn" placeholder="978-3-16-148410-0">
+                </div>
+                <div class="form-group">
+                    <label for="editorial">Editorial</label>
+                    <input type="text" id="editorial" name="editorial" placeholder="Nombre de la editorial">
+                </div>
+                <div class="form-group">
+                    <label for="fecha_publicacion">Fecha de Publicación</label>
+                    <div class="input-icon-wrapper">
+                        <input type="text" id="fecha_publicacion" name="fecha_publicacion" placeholder="mm/dd/yyyy">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                </div>
+
+                <div class="form-group third-width">
+                    <label for="numero_paginas">Número de Páginas</label>
+                    <input type="number" id="numero_paginas" name="numero_paginas" >
+                </div>
+
+                <div class="form-group full-width tag-group">
+                    <label for="etiquetas">Etiquetas</label>
+                    <div class="tag-input-wrapper">
+                        <input type="text" id="etiquetas" name="etiquetas" placeholder="Agrega etiquetas (ej: ficción, clásico)">
+                        <button type="button" class="btn btn-icon"><i class="fas fa-plus"></i></button>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="url_portada">URL de la Portada</label>
+                    <div class="url-input-wrapper">
+                        <input type="url" id="url_portada" name="url_portada" placeholder="https://ejemplo.com/portada.jpg">
+                        <button type="button" class="btn btn-icon upload-icon"><i class="fas fa-upload"></i></button>
+                    </div>
+                </div>
+
+                <div class="form-actions full-width">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar y Publicar
+                    </button>
+                    <button type="button" class="btn btn-secondary">Cancelar</button>
+                </div>
+
+            </form>
+        </main>
+    </div>
+
+    <script>
+    function goBack() {
+        // Esta línea es la clave: le dice al navegador que retroceda.
+        window.history.back();
+    }
+    </script>
+
+</body>
+</html>

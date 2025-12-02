@@ -1,0 +1,837 @@
+/* Estilo para las notificaciones */
+.contenedor-notificaciones {
+    position: relative; /* Es clave para que el dropdown se posicione respecto a la campana */
+    display: inline-block;
+}
+
+/* Ocultar el checkbox completamente */
+#activador-notificaciones {
+    display: none;
+}
+
+/* Estilos de la campana (Label) */
+.icono-campana {
+    cursor: pointer;
+    font-size: 24px; /* Ajusta el tamaño del ícono */
+    padding: 10px;
+    display: inline-block;
+    /* (Puedes agregar aquí más estilos para la campana) */
+}
+
+/* Estilos iniciales del panel de notificaciones (OCULTO por defecto) */
+.panel-dropdown {
+    /* Posicionamiento y apariencia */
+    position: absolute;
+    top: 100%; /* Aparece justo debajo del icono */
+    right: 0;  /* Alineado a la derecha del icono */
+    z-index: 10;
+    width: 350px; /* Ancho similar al de tu imagen */
+    max-height: 500px;
+    overflow-y: auto;
+    
+    /* Apariencia visual */
+    background-color: #fff; /* Fondo blanco */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Sombra elegante */
+    
+    /* Ocultar inicialmente */
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-10px); /* Para la animación de aparición */
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+    
+    /* Estilos del contenido */
+    padding: 15px 0 10px 0;
+    font-family: Arial, sans-serif;
+}
+
+/* ESTO ES LO MÁS IMPORTANTE: Mostrar el panel cuando el checkbox esté marcado */
+/* Usamos el selector de hermano general (~) */
+#activador-notificaciones:checked ~ .panel-dropdown {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0); /* Vuelve a la posición original */
+}
+
+/* --- Estilos internos del panel (Para replicar el diseño de la imagen) --- */
+
+.encabezado {
+    padding: 0 15px 15px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 10px;
+}
+.encabezado h2 {
+    font-size: 1.2em;
+    color: #333;
+    margin: 0;
+}
+.encabezado p {
+    font-size: 0.9em;
+    color: #666;
+    margin: 0;
+}
+
+.notificacion {
+    display: flex;
+    align-items: flex-start;
+    padding: 10px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+}
+
+.notificacion:hover {
+    background-color: #f9f9f9;
+}
+
+.icono-notif {
+    font-size: 24px;
+    margin-right: 10px;
+    padding: 8px;
+    background-color: #f0f4ff; /* Fondo azul claro para el ícono */
+    color: #004dff; /* Icono azul */
+    border-radius: 4px;
+}
+.nuevo-libro .icono-notif { background-color: #e6f7ff; color: #1890ff; }
+.nueva-revista .icono-notif { background-color: #fff1e6; color: #fa8c16; }
+.nuevo-usuario .icono-notif { background-color: #f9f0ff; color: #722ed1; }
+
+.contenido h3 {
+    font-size: 1em;
+    font-weight: bold;
+    color: #333;
+    margin: 0 0 5px 0;
+}
+
+.etiqueta-nueva {
+    background-color: #004dff; /* Azul de la imagen */
+    color: white;
+    font-size: 0.7em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: normal;
+    margin-left: 5px;
+}
+
+.contenido p {
+    font-size: 0.9em;
+    color: #555;
+    margin: 0;
+}
+
+.tiempo {
+    font-size: 0.8em;
+    color: #999 !important;
+    margin-top: 5px !important;
+}
+
+.ver-todas {
+    display: block;
+    text-align: center;
+    padding: 10px;
+    font-size: 0.9em;
+    color: #004dff;
+    text-decoration: none;
+    border-top: 1px solid #eee;
+    margin-top: 10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    font-size: 1.4em; /* Tamaño del texto del logo */
+    margin-right: 20px; /* Espacio entre el logo y el badge de rol */
+}
+
+.logo-container i {
+    font-size: 1.6em; /* Tamaño del ícono del libro */
+    margin-right: 8px;
+}
+
+/* 3. Etiqueta de Rol (Badge "Administrador") */
+.role-badge {
+    background-image: linear-gradient(to right, #2a6ed4, #048000); 
+    padding-left: 0px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.5em;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    color: white;
+}
+
+.role-badge-colaborador {
+    background-image: linear-gradient(to right, #9b30ffb9, #206cdd); 
+    padding-left: 0px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.5em;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    color: white;
+}
+/* 4. Sección derecha (Enlaces de navegación) */
+.navbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.nav-item {
+    color: white;
+    text-decoration: none; /* Quitar el subrayado de los enlaces */
+    padding: 0 15px; /* Espaciado entre elementos */
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    white-space: nowrap; /* Evita que los textos se envuelvan */
+}
+
+.nav-item:hover {
+    opacity: 0.8; /* Efecto de hover sutil */
+}
+
+/* Estilo para los íconos dentro de los enlaces */
+.nav-item i {
+    margin-right: 5px; 
+    font-size: 1.1em; 
+}
+
+/* Estilos específicos para "Agregar Contenido" */
+.add-content {
+    /* La imagen muestra que el ícono es un signo de suma, no solo un texto */
+    padding-right: 25px; /* Separación extra antes del siguiente ícono */
+}
+.add-content i {
+    font-size: 1.2em; /* Ícono un poco más grande */
+}
+
+/* Estilos específicos para los íconos de campana y bookmark (solo ícono) */
+.icon-only {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+.icon-only span {
+    display: none; /* Oculta el texto si estuviera presente, pero el HTML no lo tiene */
+}
+.icon-only i {
+    margin-right: 0; /* Quita el margen derecho del ícono */
+}
+
+/* Estilo específico para "Salir" */
+.logout i {
+    transform: scaleX(-1); /* Voltear el ícono de la flecha para que apunte a la izquierda */
+}
+
+/* Ajustes finos para simular el look del original */
+.navbar-right .nav-item:last-child {
+    padding-right: 0; /* Quita el padding del último elemento */
+}
+
+
+
+
+     :root {
+            --buap-blue: #002d73; 
+            --buap-primary: #0d6efd; 
+            --buap-footer-dark: #121212; 
+        }
+
+        .header-blue {
+            background-color: #0d3886;
+        }
+
+        .search-bar {
+            max-width: 600px;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem; 
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+
+        .search-bar .input-group-text,
+        .search-bar .form-control {
+            background-color: #fff;
+            border: none;
+            box-shadow: none;
+        }
+
+        .filter-tabs .active-tab {
+            background-color: var(--buap-blue);
+            border-color: var(--buap-blue);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .filter-tabs .tab-btn {
+            color: #495057;
+            border: 1px solid #dee2e6;
+            background-color: #f8f9fa;
+            font-weight: 500;
+            border-radius: 15%;
+            transition: all 0.2s;
+            --bs-btn-bg: #f8f9fa; 
+            --bs-btn-border-color: #dee2e6;
+        }
+
+        .filter-tabs .tab-btn:hover {
+            background-color: var(--buap-blue);
+            border-color: var(--buap-blue);
+            color: white;
+        }
+
+        .filter-tabs input[type="radio"] {
+            display: none; 
+        }
+
+        .filter-tabs button:not(.active-tab) {
+            background-color: #f8f9fa;
+            color: #495057;
+            border-color: #dee2e6;
+        }
+
+        .content-card {
+            border-radius: 0.5rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .content-card .card-img-top {
+            height: 200px;
+            object-fit: cover;
+            width: 100%;
+        }
+
+        .placeholder-img {
+            height: 200px;
+        }
+
+        .trend-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 0.35em 0.65em;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 0.3rem;
+            background-color: var(--buap-primary) !important;
+        }
+
+        .editorial-banner {
+            background: linear-gradient(90deg, #5e00b8 0%, #002d73 100%);
+           background-image: linear-gradient(to left, #0d6efd, #002d73);
+        }
+
+        .footer-dark {
+            background-color: var(--buap-footer-dark);
+        }
+
+        .footer-dark a:hover {
+            color: #fff !important;
+        }
+
+        .header-blue .border {
+            border-color: #ffffff70 !important;
+        }
+        .header-blue .border {
+            border-color: #ffffff70 !important;
+        }
+        .header-blue2 {
+            background-color: #114097;
+            background-image: linear-gradient(to left, #0d6efd, #002d73);
+            margin-top: 0 !important;
+            padding: 1rem;
+        }
+
+        .icon-white {
+            color: white;
+        }
+        .Buap{
+            text-align: left;
+        }
+
+:root {
+    --buap-blue: #002d73;
+    --buap-primary: #0d6efd;
+    --buap-footer-dark: #121212;
+    --buap-light-primary: #e0f2fe; 
+}
+
+.book-card .card-img-top {
+    height: 200px; 
+    object-fit: cover;
+    width: 100%;
+    border-top-left-radius: 0.5rem; 
+    border-top-right-radius: 0.5rem; 
+}
+
+.book-card .card-body {
+    display: flex; 
+    flex-direction: column;
+    justify-content: space-between; 
+    padding-bottom: 0.75rem; 
+}
+
+.book-card .card-title {
+    font-size: 1.15rem; 
+    margin-bottom: 0.25rem; 
+}
+
+.book-card .card-text.text-muted {
+    font-size: 0.9rem; 
+    margin-bottom: 0.75rem; 
+}
+
+.category-badge {
+    background-color: var(--buap-light-primary); 
+    color: var(--buap-primary) !important; 
+    border: 1px solid var(--buap-primary); 
+    padding: 0.25em 0.75em;
+    border-radius: 0.3rem; 
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.rating-display {
+    display: flex;
+    align-items: center;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.rating-display .bi-star-fill {
+    color: #ffc107;
+}
+
+.trend-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 0.3em 0.5em; 
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 0.25rem;
+    background-color: var(--buap-primary) !important;
+}
+
+.content-row {
+    justify-content: center; 
+}
+
+.animated-gradient-button {
+  background-image: linear-gradient(to right, #9B30FF, #609bf5); 
+  color: white;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  outline: none; 
+  transition: transform 0.2s ease-in-out; 
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
+}
+
+.animated-gradient-button:hover,
+.animated-gradient-button:focus {
+  transform: scale(1.05); 
+  color: white !important;
+}
+
+
+.icon-effect {
+    display: inline-block; 
+    transition: transform 0.2s ease-in-out; 
+}
+
+.icon-effect:hover,
+.icon-effect:focus {
+    transform: scale(1.1); 
+    color: rgb(209, 73, 168) !important;
+    
+
+}
+
+
+
+
+
+
+
+/* CSS DE AGREGAR CONTENIDO xd */
+:root {
+    --color-primary: #1e3a8a; 
+    --color-secondary: #ffffff; 
+    --color-text: #333333; 
+    --color-label: #555555; 
+    --color-border: #cccccc; 
+    --color-bg-light: #f4f7f9; 
+    --color-placeholder: #a0a0a0;
+}
+
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+
+.container-agregar {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: var(--color-secondary);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+
+.header-agregar {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-primary);
+    color: var(--color-secondary);
+    padding: 15px 20px;
+}
+
+.header-agregar i {
+    font-size: 1.2em;
+    margin-right: 15px;
+    cursor: pointer;
+}
+
+.header-agregar h1 {
+    font-size: 1.3em;
+    font-weight: 500;
+}
+
+.header h1 i {
+    margin-right: 10px;
+}
+
+
+.content-card {
+    padding: 25px;
+}
+
+.content-card h2 {
+    font-size: 1.8em;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    font-size: 0.9em;
+    color: var(--color-label);
+    margin-bottom: 25px;
+}
+
+
+.form-grid {
+    display: grid;
+  
+    grid-template-columns: 1fr;
+    gap: 20px; 
+}
+
+
+@media (min-width: 768px) {
+    .form-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .form-grid > .form-group:nth-child(2),
+    .form-grid > .form-group:nth-child(3),
+    .form-grid > .form-group:nth-child(4),
+    .form-grid > .form-group:nth-child(5) {
+        grid-column: span 1.5; 
+    }
+    
+    .form-grid > .form-group:nth-child(6), 
+    .form-grid > .form-group:nth-child(7) { 
+        grid-column: span 1;
+    }
+    
+    .form-grid > .form-group.third-width {
+        grid-column: span 1;
+    }
+    
+}
+
+.full-width {
+    grid-column: 1 / -1; 
+}
+
+.third-width {
+    grid-column: span 1; 
+}
+
+
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--color-label);
+    font-size: 0.9em;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="url"],
+textarea,
+select {
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 1em;
+    width: 100%;
+    color: var(--color-text);
+    transition: border-color 0.3s;
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--color-placeholder);
+    font-style: italic;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: var(--color-primary);
+    outline: none;
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper select {
+    appearance: none; 
+    padding-right: 30px;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none; 
+    color: var(--color-label);
+}
+
+.input-icon-wrapper,
+.tag-input-wrapper,
+.url-input-wrapper {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.input-icon-wrapper input {
+    padding-right: 35px; 
+}
+
+.input-icon-wrapper .fas {
+    position: absolute;
+    right: 10px;
+    color: var(--color-placeholder);
+    font-size: 1.1em;
+}
+
+.btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+    font-size: 1em;
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-primary:hover {
+    background-color: #1a306a; 
+}
+
+.btn-secondary {
+    background-color: #f0f0f0;
+    color: var(--color-text);
+}
+
+.btn-secondary:hover {
+    background-color: #e0e0e0;
+}
+
+.btn-icon {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background-color: var(--color-primary);
+    color: var(--color-secondary);
+    margin-left: 5px;
+    flex-shrink: 0; 
+}
+
+.tag-input-wrapper input {
+    flex-grow: 1;
+}
+
+.url-input-wrapper input {
+    flex-grow: 1;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.url-input-wrapper .upload-icon {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    margin-left: 0;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end; 
+    gap: 15px;
+    padding-top: 20px;
+    border-top: 1px solid #eeeeee;
+    margin-top: 20px;
+}
+
+.form-actions .btn {
+    min-width: 150px;
+    padding: 12px 20px;
+}
+
+@media (max-width: 600px) {
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Estilos para el panel de administrador */
+
+/* Colores Personalizados (Basados en Bootstrap y tu imagen) */
+:root {
+    --buap-blue: #1C3E6C; /* Un azul oscuro para la barra de navegación */
+    --buap-light-blue: #40798C; /* Un azul más claro para el fondo del tab activo */
+    --purple: #6f42c1;
+    --purple-subtle: #e9d5ff; /* Color para el fondo del ícono de Revista */
+}
+
+/* 1. Barra de Navegación */
+.custom-navbar {
+    background-color: var(--buap-blue);
+    color: white;
+}
+.custom-navbar .navbar-brand i {
+    color: #FFA500; /* Color de acento para el ícono de la gráfica */
+}
+
+/* 2. Tarjetas de Métricas */
+.metric-card {
+    border: none;
+    border-radius: 0.75rem; /* Bordes redondeados */
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+}
+
+.metric-card h2 {
+    font-weight: 700;
+}
+
+.icon-circle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+}
+
+/* Personalización de colores de texto para los iconos (porque los colores de Bootstrap son claros) */
+.text-info { color: #0dcaf0 !important; }
+.text-primary { color: #0d6efd !important; }
+.text-success { color: #198754 !important; }
+.text-warning { color: #ffc107 !important; }
+.text-purple { color: var(--purple) !important; } /* Definición de color púrpura */
+
+/* Ajuste de los colores de fondo sutiles */
+.bg-info-subtle { background-color: #cff4fc !important; }
+.bg-primary-subtle { background-color: #cfe2ff !important; }
+.bg-success-subtle { background-color: #d1e7dd !important; }
+.bg-warning-subtle { background-color: #fff3cd !important; }
+.bg-purple-subtle { background-color: var(--purple-subtle) !important; }
+
+/* 3. Componente de Pestañas (Tabs) */
+
+/* Contenedor principal para centrar los botones */
+.custom-tabs {
+    background-color: #E9ECEF; /* Un gris claro para el fondo del contenedor */
+    border-radius: 0.5rem;
+    padding: 0.25rem; /* Pequeño padding alrededor de los botones */
+}
+
+.custom-tabs .nav-link {
+    color: #495057; /* Texto del botón inactivo */
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 1rem; /* Borde redondeado del botón */
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.custom-tabs .nav-link.active {
+    background-color: #004dff; /* Fondo azul para el botón activo */
+    color: white; /* Texto blanco para el botón activo */
+    /* Remueve el sombreado por defecto de Bootstrap pills si lo hubiera */
+    box-shadow: none;
+}

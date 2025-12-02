@@ -123,3 +123,8 @@ document.getElementById("searchInput").addEventListener("input", e => {
     );
     renderizar(filtrados);
 });
+
+
+
+
+
