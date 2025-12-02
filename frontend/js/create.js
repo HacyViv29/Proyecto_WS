@@ -16,10 +16,26 @@ document.getElementById("createForm").addEventListener("submit", async function(
         return;
     }
 
-    // Separar nombre en 2 partes
-    const partes = nombre.split(" ");
-    const first_name = partes[0];
-    const last_name = partes.slice(1).join(" ") || " ";
+  const partes = nombreCompleto.split(/\s+/).filter(p => p.length > 0);
+
+    let first_name = "";
+    let last_name = "";
+
+    if (partes.length === 1) {
+        first_name = partes[0];
+        last_name = ""; 
+    } else if (partes.length >= 2) {
+        first_name = partes[0];
+        last_name = partes.slice(1).join(" "); 
+    }
+    
+   
+    const payload = {
+        first_name: first_name,
+        last_name: last_name, 
+        email: email,
+        password: pass,
+    };
 
     try {
         const response = await fetch("http://localhost:8000/api/v1/register", {
