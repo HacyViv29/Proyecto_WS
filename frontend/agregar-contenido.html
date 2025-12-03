@@ -33,7 +33,7 @@
             <form action="#" method="POST" class="form-grid">
                 
                 <div class="form-group full-width">
-                    <label for="tipo_contenido">Tipo de Contenido</label>
+                    <label for="tipo_contenido">Categoria</label>
                     <div class="select-wrapper">
                         <select id="tipo_contenido" name="tipo_contenido">
                             <option value="libro">Libro</option>
@@ -48,25 +48,17 @@
                     <label for="titulo">Título *</label>
                     <input type="text" id="titulo" name="titulo" placeholder="Ingresa el título" required>
                 </div>
-                <div class="form-group">
-                    <label for="autor_editorial">Autor / Editorial *</label>
-                    <input type="text" id="autor_editorial" name="autor_editorial" placeholder="Ingresa el autor o editorial" required>
-                </div>
+
 
                 <div class="form-group">
-                    <label for="categoria">Categoría *</label>
-                    <input type="text" id="categoria" name="categoria" placeholder="Ej: Literatura, Ciencia, Historia" required>
+                    <label for="autor">Autor *</label>
+                    <input type="text" id="autor" name="autor" placeholder="Ingresa el autor" required>
                 </div>
+
+
                 <div class="form-group">
-                    <label for="idioma">Idioma</label>
-                    <div class="select-wrapper">
-                        <select id="idioma" name="idioma">
-                            <option value="" disabled selected>Selecciona el idioma</option>
-                            <option value="es">Español</option>
-                            <option value="en">Inglés</option>
-                            </select>
-                        <i class="fas fa-caret-down select-arrow"></i>
-                    </div>
+                    <label for="autor_editorial">Editorial *</label>
+                    <input type="text" id="autor_editorial" name="autor_editorial" placeholder="Ingresa el autor o editorial" required>
                 </div>
 
                 <div class="form-group full-width">
@@ -78,10 +70,7 @@
                     <label for="isbn_issn">ISBN / ISSN</label>
                     <input type="text" id="isbn_issn" name="isbn_issn" placeholder="978-3-16-148410-0">
                 </div>
-                <div class="form-group">
-                    <label for="editorial">Editorial</label>
-                    <input type="text" id="editorial" name="editorial" placeholder="Nombre de la editorial">
-                </div>
+                
                 <div class="form-group">
                     <label for="fecha_publicacion">Fecha de Publicación</label>
                     <div class="input-icon-wrapper">
@@ -90,19 +79,7 @@
                     </div>
                 </div>
 
-                <div class="form-group third-width">
-                    <label for="numero_paginas">Número de Páginas</label>
-                    <input type="number" id="numero_paginas" name="numero_paginas" >
-                </div>
-
-                <div class="form-group full-width tag-group">
-                    <label for="etiquetas">Etiquetas</label>
-                    <div class="tag-input-wrapper">
-                        <input type="text" id="etiquetas" name="etiquetas" placeholder="Agrega etiquetas (ej: ficción, clásico)">
-                        <button type="button" class="btn btn-icon"><i class="fas fa-plus"></i></button>
-                    </div>
-                </div>
-
+            
                 <div class="form-group full-width">
                     <label for="url_portada">URL de la Portada</label>
                     <div class="url-input-wrapper">
@@ -124,7 +101,6 @@
 
     <script>
     function goBack() {
-        // Esta línea es la clave: le dice al navegador que retroceda.
         window.history.back();
     }
     </script>
