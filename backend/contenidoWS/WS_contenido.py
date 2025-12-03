@@ -101,6 +101,35 @@ async def obtener_todos_detalles():
             detail=f"Error al obtener detalles: {str(e)}"
         )
 
+@app.get("/contenido/publisher/{publisher}", response_model=ResponseModel)
+async def obtener_por_publisher(publisher: str):
+    """
+    Busca en Detalles/ todos los contenidos cuyo Publisher sea igual al valor dado.
+    """
+    try:
+        ref = db.reference('Detalles')
+        detalles = ref.get() or {}
+
+        resultados = {}
+
+        # Recorrer todos los ISBN dentro de Detalles
+        for isbn, data in detalles.items():
+            if isinstance(data, dict) and data.get("Publisher") == publisher:
+                resultados[isbn] = data
+
+        return {
+            "status": "success",
+            "message": f"Contenidos encontrados para Publisher '{publisher}'",
+            "data": resultados
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al buscar por Publisher: {str(e)}"
+        )
+
+
 
 @app.post("/contenido", response_model=ResponseModel, status_code=status.HTTP_201_CREATED)
 async def crear_producto(producto: ProductoCreate):

@@ -98,144 +98,115 @@ $suscripcionesWS->get('/suscripciones/{usuario}', function (Request $request, Re
     }
 });
 
-$suscripcionesWS->post('/suscripciones/{usuario}/suscribir', function (Request $request, Response $response, array $args) use ($database) {
+$suscripcionesWS->post('/suscripciones/crear', function (Request $request, Response $response) use ($database) {
     try {
-        $usuario = $args['usuario'];
         $body = $request->getParsedBody();
-        
-        // Validar datos
-        if (empty($body['tipo'])) {
+
+        if (empty($body['correo'])) {
             $errorData = [
                 'status' => 'error',
-                'message' => 'Se requiere el tipo de suscripción (tipo)'
+                'message' => 'Se requiere el correo del usuario (correo)'
             ];
             $response->getBody()->write(json_encode($errorData));
             return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
         }
-        
-        $tipo = $body['tipo'];
-        
-        // Verificar si el usuario existe
-        $usuarioData = $database->getReference("Suscripciones/{$usuario}")->getValue();
-        if (!$usuarioData) {
-            $errorData = [
-                'status' => 'error',
-                'message' => "Usuario {$usuario} no encontrado"
-            ];
-            $response->getBody()->write(json_encode($errorData));
-            return $response->withStatus(404)->withHeader('Content-Type', 'application/json');
-        }
-        
-        // Tipos de suscripción válidos según tu estructura
-        $tiposValidos = ['libros', 'periodicos', 'revistas', 'usuarios'];
-        if (!in_array($tipo, $tiposValidos)) {
-            $errorData = [
-                'status' => 'error',
-                'message' => 'Tipo de suscripción inválido. Válidos: ' . implode(', ', $tiposValidos)
-            ];
-            $response->getBody()->write(json_encode($errorData));
-            return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
-        }
-        
-        // Suscribir al tipo específico
-        $database->getReference("Suscripciones/{$usuario}/{$tipo}")->set(true);
-        
-        // Obtener suscripciones actualizadas
-        $suscripcionesActualizadas = $database->getReference("Suscripciones/{$usuario}")->getValue();
-        
+
+        $correo = $body['correo'];
+
+        // Crear entrada inicial de suscripciones
+        $database->getReference("Suscripciones/{$correo}")->set([
+            'libros' => false,
+            'periodicos' => false,
+            'revistas' => false,
+            'usuarios' => false
+        ]);
+
         $data = [
             'status' => 'success',
-            'message' => "Usuario {$usuario} suscrito correctamente a {$tipo}",
+            'message' => "Suscripciones creadas para el usuario {$correo}",
             'data' => [
-                'usuario' => $usuario,
-                'tipo_suscripcion' => $tipo,
-                'estado' => true,
-                'suscripciones_actuales' => $suscripcionesActualizadas
+                'correo' => $correo,
+                'suscripciones' => [
+                    'libros' => false,
+                    'periodicos' => false,
+                    'revistas' => false,
+                    'usuarios' => false
+                ]
             ]
         ];
-        
+
         $response->getBody()->write(json_encode($data));
-        return $response->withStatus(200)->withHeader('Content-Type', 'application/json');
-        
+        return $response->withStatus(201)->withHeader('Content-Type', 'application/json');
+
     } catch (Exception $e) {
         $errorData = [
             'status' => 'error',
-            'message' => 'Error al suscribir: ' . $e->getMessage()
+            'message' => 'Error al crear suscripciones: ' . $e->getMessage()
         ];
-        
         $response->getBody()->write(json_encode($errorData));
         return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
     }
 });
 
-$suscripcionesWS->post('/suscripciones/{usuario}/desuscribir', function (Request $request, Response $response, array $args) use ($database) {
+
+$suscripcionesWS->put('/suscripciones/actualizar', function (Request $request, Response $response) use ($database) {
     try {
-        $usuario = $args['usuario'];
         $body = $request->getParsedBody();
-        
-        // Validar datos
-        if (empty($body['tipo'])) {
+
+        if (empty($body['correo'])) {
             $errorData = [
                 'status' => 'error',
-                'message' => 'Se requiere el tipo de suscripción (tipo)'
+                'message' => 'Se requiere el correo del usuario (correo)'
             ];
             $response->getBody()->write(json_encode($errorData));
             return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
         }
-        
-        $tipo = $body['tipo'];
-        
-        // Verificar si el usuario existe
-        $usuarioData = $database->getReference("Suscripciones/{$usuario}")->getValue();
-        if (!$usuarioData) {
+
+        $correo = $body['correo'];
+
+        // Construir arreglo con valores recibidos
+        $suscripciones = [
+            'libros' => $body['libros'] ?? false,
+            'periodicos' => $body['periodicos'] ?? false,
+            'revistas' => $body['revistas'] ?? false,
+            'usuarios' => $body['usuarios'] ?? false
+        ];
+
+        // Verificar que el usuario exista
+        $ref = $database->getReference("Suscripciones/{$correo}");
+        $existing = $ref->getValue();
+
+        if ($existing === null) {
             $errorData = [
                 'status' => 'error',
-                'message' => "Usuario {$usuario} no encontrado"
+                'message' => "No existe una suscripción para el usuario {$correo}"
             ];
             $response->getBody()->write(json_encode($errorData));
             return $response->withStatus(404)->withHeader('Content-Type', 'application/json');
         }
-        
-        // Tipos de suscripción válidos según tu estructura
-        $tiposValidos = ['libros', 'periodicos', 'revistas', 'usuarios'];
-        if (!in_array($tipo, $tiposValidos)) {
-            $errorData = [
-                'status' => 'error',
-                'message' => 'Tipo de suscripción inválido. Válidos: ' . implode(', ', $tiposValidos)
-            ];
-            $response->getBody()->write(json_encode($errorData));
-            return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
-        }
-        
-        // Desuscribir del tipo específico
-        $database->getReference("Suscripciones/{$usuario}/{$tipo}")->set(false);
-        
-        // Obtener suscripciones actualizadas
-        $suscripcionesActualizadas = $database->getReference("Suscripciones/{$usuario}")->getValue();
-        
+
+        // Actualizar valores
+        $ref->update($suscripciones);
+
         $data = [
             'status' => 'success',
-            'message' => "Usuario {$usuario} desuscrito correctamente de {$tipo}",
-            'data' => [
-                'usuario' => $usuario,
-                'tipo_suscripcion' => $tipo,
-                'estado' => false,
-                'suscripciones_actuales' => $suscripcionesActualizadas
-            ]
+            'message' => "Suscripciones actualizadas correctamente",
+            'correo' => $correo,
+            'suscripciones' => $suscripciones
         ];
-        
+
         $response->getBody()->write(json_encode($data));
         return $response->withStatus(200)->withHeader('Content-Type', 'application/json');
-        
+
     } catch (Exception $e) {
         $errorData = [
             'status' => 'error',
-            'message' => 'Error al desuscribir: ' . $e->getMessage()
+            'message' => 'Error al actualizar suscripciones: ' . $e->getMessage()
         ];
-        
         $response->getBody()->write(json_encode($errorData));
         return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
     }
 });
+
 
 $suscripcionesWS->run();
