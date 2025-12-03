@@ -17,7 +17,7 @@ let listaCompleta = [];
 
 async function cargarContenidos() {
     try {
-        console.log("📡 Iniciando petición a /contenido/detalles...");
+        console.log("Iniciando petición a /contenido/detalles...");
         
         const res = await fetch("http://localhost:8000/contenido/detalles", {
             method: "GET",
@@ -45,19 +45,19 @@ async function cargarContenidos() {
         const newToken = res.headers.get("x-new-access-token");
         const newRefresh = res.headers.get("x-new-refresh-token");
         if (newToken) {
-            console.log("🔄 Token renovado");
+            console.log("Token renovado");
             localStorage.setItem("token", newToken);
             if (newRefresh) localStorage.setItem("refresh_token", newRefresh);
         }
 
         const responseBody = await res.json();
-        console.log("📦 Datos recibidos:", responseBody);
+        console.log("Datos recibidos:", responseBody);
 
         const dataObjects = responseBody.data || {};
         const keys = Object.keys(dataObjects);
 
         if (keys.length === 0) {
-            console.warn("⚠️ La respuesta no contiene datos en 'data'");
+            console.warn("La respuesta no contiene datos en 'data'");
             contenedor.innerHTML = "<p class='text-center mt-5'>No se encontraron contenidos.</p>";
             return;
         }
@@ -85,11 +85,11 @@ async function cargarContenidos() {
             };
         });
 
-        console.log("✅ Lista procesada:", listaCompleta);
+        console.log("Lista procesada:", listaCompleta);
         renderizar(listaCompleta);
 
     } catch (error) {
-        console.error("❌ Error grave en cargarContenidos:", error);
+        console.error("Error grave en cargarContenidos:", error);
         contenedor.innerHTML = `<p class='text-danger text-center'>Error cargando datos: ${error.message}</p>`;
     }
 }

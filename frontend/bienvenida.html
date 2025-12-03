@@ -240,7 +240,9 @@
                 <i class="bi bi-book-fill icon-white fs-2 me-2"></i> Conecta BUAP
             </h1>
             <div class="text-white fs-5">
-                <a href="notification.html" class="text-white me-3"><i class="bi bi-bell icon-effect"></i></a>
+                <span id="btnNotifications" class="text-white me-3" style="cursor:pointer;">
+                    <i class="bi bi-bell icon-effect"></i>
+                </span>
                 <a href="acount-settings.html" class="text-white me-3"><i class="bi bi-gear icon-effect"></i></a>
 
                 <span id="btnLogout" class="px-2 py-1" style="cursor:pointer;">
@@ -348,6 +350,12 @@
             <p class="text-center text-white-50 small mb-0">© 2025 Conecta BUAP. Todos los derechos reservados.</p>
         </div>
     </footer>
+
+    <div id="notificationPanel" class="position-fixed top-0 end-0 bg-white shadow-lg"
+        style="width: 380px; height: 100vh; transform: translateX(100%); transition: 0.3s; z-index: 9999;">
+    </div>
+
+    <script src="notifications.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
