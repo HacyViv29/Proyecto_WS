@@ -5,7 +5,6 @@ import asyncio
 from typing import Optional, Dict, Any
 from config.settings import Config
 
-# Helper para manejar la petición HTTP de forma asíncrona
 async def firebase_request(method: str, url: str, data: Optional[Dict] = None):
     loop = asyncio.get_event_loop()
     
@@ -20,7 +19,6 @@ async def firebase_request(method: str, url: str, data: Optional[Dict] = None):
                 resp_data = response.read()
                 return json.loads(resp_data) if resp_data else None
         except urllib.error.HTTPError as e:
-            # Retorna None si no existe (404) o hay error
             return None
         except Exception as e:
             print(f"Error connecting to Firebase: {e}")
@@ -30,22 +28,25 @@ async def firebase_request(method: str, url: str, data: Optional[Dict] = None):
 
 class User:
     def __init__(self, **kwargs):
-        self.id = kwargs.get('id', 0)
         self.email = kwargs.get('email')
         self.first_name = kwargs.get('first_name')
         self.last_name = kwargs.get('last_name')
         self.password_hash = kwargs.get('password_hash')
         self.refresh_token = kwargs.get('refresh_token')
+        self.role = kwargs.get('role', 'client') 
+        self.telephone = kwargs.get('telephone', '')
+        
+        # El ID logico sera el correo sanitizado (la clave en Firebase)
+        # No se guarda en BD, se calcula al vuelo
+        self.id = self._sanitize_email(self.email) if self.email else None
 
     @staticmethod
     def _sanitize_email(email: str) -> str:
-        # Reemplaza puntos por comas para la clave de Firebase
+        if not email: return ""
         return email.replace('.', ',')
 
-    # CORRECCIÓN: Quitamos 'async' para que devuelva el QuerySet inmediatamente
     @classmethod
     def filter(cls, email: str = None, **kwargs):
-        # Permitimos pasar email como argumento o dentro de kwargs
         target_email = email if email else kwargs.get('email')
         return UserQuerySet(target_email)
 
@@ -54,10 +55,16 @@ class User:
         email = kwargs.get('email')
         sanitized_email = cls._sanitize_email(email)
         
-        if 'id' not in kwargs:
-            kwargs['id'] = int(asyncio.get_event_loop().time()) 
-            
+        if 'role' not in kwargs:
+            kwargs['role'] = 'client'
+
+        # Eliminamos 'id' si viniera en kwargs para no guardarlo en Firebase
+        if 'id' in kwargs:
+            del kwargs['id']
+
         path = f"{Config.FIREBASE_COLLECTION}/{sanitized_email}.json"
+        
+        # Guardamos en Firebase exactamente los campos del objeto (sin ID)
         await firebase_request("PUT", path, kwargs)
         
         return cls(**kwargs)

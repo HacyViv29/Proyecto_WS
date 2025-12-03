@@ -1,11 +1,10 @@
 from pydantic import Field, EmailStr, BaseModel
 from typing import Optional
-# ESTA LÍNEA FALTABA: Importamos User para que auth_route pueda tomarlo de aquí
 from models.user import User 
 
-# UserGet manual (Reemplaza a pydantic_model_creator)
+# UserGet para respuestas (ID ahora es string)
 class UserGet(BaseModel):
-    id: int
+    id: str  
     email: EmailStr
     first_name: Optional[str] = None
     last_name: Optional[str] = None
@@ -13,7 +12,6 @@ class UserGet(BaseModel):
     class Config:
         from_attributes = True 
 
-    # Método helper para compatibilidad con el código existente que usa .from_tortoise_orm
     @classmethod
     async def from_tortoise_orm(cls, obj):
         return cls(**obj.__dict__)
