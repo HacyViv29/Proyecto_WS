@@ -1,7 +1,7 @@
 from fastapi.routing import APIRouter
 from fastapi import Depends, status, HTTPException
 from config.auth import verified_user, authorize, pwd_context, create_access_jwt, create_refresh_jwt
-from schemas.user import UserPost, UserLogin, UserGet
+from schemas.user import UserPost, UserLogin, UserGet, UserUpdate
 from models.user import User 
 import requests 
 import json
@@ -30,11 +30,13 @@ async def register(body: UserPost):
     # 3. Crear usuario (Sin ID numerico guardado)
     user_object = await User.create(**data)
     
+    sanitized_email = user_object.id
+    
     # 4. Integracion Suscripciones
     try:
         requests.post(
             SUSCRIPCIONES_URL, 
-            json={"correo": body.email},
+            json={"correo": sanitized_email},
             headers={"Content-Type": "application/json"},
             timeout=5
         )
@@ -46,7 +48,7 @@ async def register(body: UserPost):
         webhook_payload = {
             "accion": "nuevo_usuario",
             "categoria": "usuarios",
-            "nuevo_usuario": body.email
+            "nuevo_usuario": sanitized_email
         }
         requests.post(
             WEBHOOK_URL,
