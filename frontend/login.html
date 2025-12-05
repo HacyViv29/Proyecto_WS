@@ -59,12 +59,27 @@
         .input-group-text { background-color: transparent; border-right: none; }
         .form-control { border-left: none; padding-left: 0; }
         .input-group, .form-control { border-radius: 8px !important; }
+
+        .body-with-background {
+            background-image: url('images/prueba1.jpg'); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .contenedor-ancho-reducido {
+            max-width: 75%; 
+            margin: 0 auto; 
+        }
+
+        
+
+
+
     </style>
 </head>
-<body>
-
-    <div class="container d-flex justify-content-center align-items-center vh-100 bg-custom-blue">
-        <div class="card card-login shadow-lg p-4">
+<body class="body-with-background">
+<div class="w-100 d-flex justify-content-center align-items-center vh-100 bg-custom-blue contenedor-ancho-reducido">        <div class="card card-login shadow-lg p-4">
             <div class="card-body text-center">
 
                 <div class="icon-circle mx-auto mb-3">

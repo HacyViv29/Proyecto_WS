@@ -17,7 +17,7 @@
         }
 
         .bg-custom-blue {
-            background: linear-gradient(135deg, var(--buap-dark-background) 0%, var(--buap-lighter-background) 100%);
+            background:linear-gradient(135deg, #64a1ad 0%, var(--buap-lighter-background) 100%);
         }
 
         .card-login {
@@ -69,11 +69,24 @@
         .input-group, .form-control {
             border-radius: 8px !important;
         }
+
+        .body-with-background {
+            background-image: url('images/prueba1.jpg'); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .contenedor-ancho-reducido {
+            max-width: 70%; 
+            margin: 0 auto; 
+        }
+
     </style>
 </head>
-<body>
+<body class="body-with-background">
 
-    <div class="container d-flex justify-content-center align-items-center vh-100 bg-custom-blue">
+    <div class="container d-flex justify-content-center align-items-center **vh-100** bg-custom-blue">
         <div class="card card-login shadow-lg p-4">
             <div class="card-body text-center">
 
@@ -86,21 +99,25 @@
 
                 <!-- FORMULARIO CON ID -->
                 <form id="createForm">
-                    <div class="mb-3 text-start">
-                        <label for="name" class="form-label fw-bold small text-muted">Nombre</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-person"></i></span>
-                            <input type="text" class="form-control" id="name" placeholder="Nombre">
-                        </div>
-                    </div>
 
-                    <div class="mb-3 text-start">
-                        <label for="lastName" class="form-label fw-bold small text-muted">Apellido</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                            <input type="text" class="form-control" id="lastName" placeholder="Apellido">
+                    <div class="row mb-3"> 
+                        <div class="col-md-6 text-start row-nomargin-bottom">
+                            <label for="name" class="form-label fw-bold small text-muted">Nombre</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control" id="name" placeholder="Nombre">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 text-start row-nomargin-bottom">
+                            <label for="lastName" class="form-label fw-bold small text-muted">Apellidos</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control" id="lastName" placeholder="Apellidos">
+                            </div>
                         </div>
                     </div>
+                
 
                     <div class="mb-3 text-start">
                         <label for="email" class="form-label fw-bold small text-muted">Correo Electrónico</label>
