@@ -208,5 +208,63 @@ $suscripcionesWS->put('/suscripciones/actualizar', function (Request $request, R
     }
 });
 
+$suscripcionesWS->post('/notificaciones/guardar', function (Request $request, Response $response) use ($database) {
+    $body = $request->getParsedBody();
+    
+    $destinatarios = $body['destinatarios'] ?? [];
+    $datos = $body['datos'] ?? [];
+
+    if (empty($destinatarios) || empty($datos)) {
+        $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Datos incompletos']));
+        return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
+    }
+
+    try {
+        // Escribir en Firebase (Nodo: Notificaciones -> Usuario)
+        foreach ($destinatarios as $usuarioKey) {
+            // Aseguramos clave válida para Firebase
+            $key = str_replace('.', ',', $usuarioKey);
+            $database->getReference("Notificaciones/{$key}")->push($datos);
+        }
+
+        $response->getBody()->write(json_encode(['status' => 'success', 'message' => 'Guardado en Firebase']));
+        return $response->withHeader('Content-Type', 'application/json');
+
+    } catch (Exception $e) {
+        $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
+        return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+    }
+});
+
+// 2. LEER NOTIFICACIONES (Tu Frontend JS llama a este endpoint)
+$suscripcionesWS->get('/notificaciones/{usuario}', function (Request $request, Response $response, array $args) use ($database) {
+    $usuario = $args['usuario'];
+    $key = str_replace('.', ',', $usuario);
+
+    try {
+        $ref = $database->getReference("Notificaciones/{$key}");
+        // Traemos las últimas 10 para no saturar
+        // Agregamos orderByKey() antes del limite
+        $snapshot = $ref->orderByKey()->limitToLast(10)->getValue();
+
+        $lista = [];
+        if ($snapshot) {
+            foreach ($snapshot as $id => $val) {
+                $val['id'] = $id;
+                $lista[] = $val;
+            }
+            // Ordenar: nuevas primero
+            $lista = array_reverse($lista);
+        }
+
+        $response->getBody()->write(json_encode(['status' => 'success', 'data' => $lista]));
+        return $response->withHeader('Content-Type', 'application/json');
+
+    } catch (Exception $e) {
+        $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
+        return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+    }
+});
+
 
 $suscripcionesWS->run();

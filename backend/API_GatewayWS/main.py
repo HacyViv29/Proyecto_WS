@@ -81,6 +81,8 @@ async def gateway_middleware(request: Request, call_next):
     # B) Rutas PHP
     elif path.startswith("/suscripciones"):
         url = f"{MICROSERVICES['php_base']}/suscripcionesWS/WS_suscripciones.php{path}"
+    elif path.startswith("/notificaciones"):
+        url = f"{MICROSERVICES['php_base']}/suscripcionesWS/WS_suscripciones.php{path}"
     elif path.startswith("/webhook"):
         url = f"{MICROSERVICES['php_base']}/webhookWS/WS_Webhook.php"
 
