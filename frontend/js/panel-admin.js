@@ -7,10 +7,10 @@ let usersData = [];
 let contentData = [];
 
 // ENDPOINTS (ajusta estas rutas si tu gateway/microservicio usa otras)
-const USERS_LIST_URL = "/api/v1/admin/users";           
-const USERS_DELETE_URL = "/api/v1/admin/users";         
-const CONTENT_LIST_URL = "/contenido/admin/list";       
-const CONTENT_DELETE_URL = "/contenido";                
+const USERS_LIST_URL = "http://localhost:8000/api/v1/users";           
+const USERS_DELETE_URL = "http://localhost:8000/api/v1/users";         
+const CONTENT_LIST_URL = "http://localhost:8000/contenido/detalles";       
+const CONTENT_DELETE_URL = "http://localhost:8000/contenido";                
 
 // Helpers tokens
 function saveNewTokens(headers) {
@@ -57,7 +57,7 @@ function renderUsers(list) {
         tr.innerHTML = `
             <td>${u.nombre || u.first_name || u.full_name || "Sin nombre"}</td>
             <td>${u.email || u.correo || ""}</td>
-            <td><span class="badge ${u.role === 'Administrador' ? 'bg-primary' : (u.role === 'Colaborador' ? 'bg-info' : 'bg-secondary')}">${u.role || 'Usuario'}</span></td>
+            <td><span class="badge ${u.role === 'admin' ? 'bg-primary' : (u.role === 'Colaborador' ? 'bg-info' : 'bg-secondary')}">${u.role || 'Usuario'}</span></td>
             <td>
                 <button class="btn btn-sm btn-outline-info btn-edit-user" data-id="${u.id}"><i class="bi bi-pencil"></i></button>
                 <button class="btn btn-sm btn-outline-danger btn-delete-user" data-id="${u.id}"><i class="bi bi-trash"></i></button>
@@ -74,7 +74,7 @@ function renderContent(list) {
     list.forEach(it => {
         const tr = document.createElement("tr");
         const tipoBadge = it.tipo && it.tipo.toLowerCase().includes("revista")
-            ? `<span class="badge bg-purple">Revista</span>`
+            ? `<span class="badge bg-info">Revista</span>`
             : (it.tipo && it.tipo.toLowerCase().includes("periód") ? `<span class="badge bg-warning">Periódico</span>` : `<span class="badge bg-success">Libro</span>`);
         tr.innerHTML = `
             <td>${it.titulo || it.title || "Sin título"}</td>
@@ -119,11 +119,37 @@ async function loadContent() {
                 "X-Refresh-Token": refreshToken || ""
             }
         });
+        
         if (res.status === 401) return handle401();
         saveNewTokens(res.headers);
-        const data = await res.json();
-        contentData = Array.isArray(data) ? data : (data.data || []);
+        
+        const responseBody = await res.json();
+        
+        // 1. Obtenemos el diccionario de datos
+        const dataObjects = responseBody.data || {};
+
+        // 2. Transformamos el Objeto a un Array para que funcione el .forEach()
+        contentData = Object.keys(dataObjects).map(key => {
+            const item = dataObjects[key];
+            
+            // 3. Inferimos el tipo basado en el ID (ISBN) para los colores
+            let tipoInferred = "Desconocido";
+            if (key.startsWith("LIB")) tipoInferred = "Libro";
+            else if (key.startsWith("REV")) tipoInferred = "Revista";
+            else if (key.startsWith("PER")) tipoInferred = "Periódico";
+
+            return {
+                id: key,
+                titulo: item.Título || item.Titulo || "Sin Título",
+                autor: item.Autor || "Desconocido",
+                editorial: item.Editorial || "",
+                tipo: tipoInferred, // <--- Esto activará tu lógica de colores
+                subido_por: item.Publisher || "Admin" 
+            };
+        });
+
         renderContent(contentData);
+
     } catch (err) {
         console.error("Error cargando contenido:", err);
         alert("Error al cargar contenido.");
@@ -200,9 +226,30 @@ document.addEventListener("click", (e) => {
 // Filtros y búsquedas (Usuarios)
 if (usersFilterSelect) {
     usersFilterSelect.addEventListener("change", () => {
-        const val = usersFilterSelect.value;
-        const filtered = (val === "Todos los roles") ? usersData : usersData.filter(u => (u.role || "").toLowerCase() === val.toLowerCase());
-        renderUsers(filtered);
+        const val = usersFilterSelect.value.toLowerCase();
+        
+        if (val.includes("todos")) {
+            renderUsers(usersData);
+        } else {
+            const filtered = usersData.filter(u => {
+                const roleBackend = (u.role || "").toLowerCase();
+
+                // Mapeo: Si seleccionas "Administrador", busca "admin"
+                if (val.includes("admin")) return roleBackend.includes("admin");
+                
+                // Mapeo: Si seleccionas "Colaborador", busca "colab" o "writer"
+                if (val.includes("colaborador")) return roleBackend.includes("colab") || roleBackend.includes("writ");
+                
+                // Mapeo: Si seleccionas "Usuario", busca "client", "user" o "cliente"
+                if (val.includes("usuario") || val.includes("cliente")) {
+                    return roleBackend === "client" || roleBackend === "cliente" || roleBackend === "user";
+                }
+
+                return roleBackend.includes(val);
+            });
+            
+            renderUsers(filtered);
+        }
     });
 }
 if (usersSearchInput) {
@@ -230,7 +277,7 @@ if (contentSearchInput) {
     });
 }
 if (contentAddBtn) {
-    contentAddBtn.addEventListener("click", () => window.location.href = "create.html");
+    contentAddBtn.addEventListener("click", () => window.location.href = "agregar-contenido.html");
 }
 
 // Logout

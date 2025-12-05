@@ -20,7 +20,7 @@ let datosOriginales = []; // Para filtrar y buscar sin perder datos
 //  CARGAR PUBLICACIONES
 async function cargarContenido() {
     try {
-        const res = await fetch("http://localhost:8000/contenido/mis-publicaciones", {
+        const res = await fetch("http://localhost:8000/contenido/", {
             headers: {
                 "Authorization": `Bearer ${token}`
             }

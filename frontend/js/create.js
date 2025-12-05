@@ -1,12 +1,13 @@
 document.getElementById("createForm").addEventListener("submit", async function(event) {
     event.preventDefault();
 
-    const nombre = document.getElementById("fullName").value.trim();
+    const nombre = document.getElementById("name").value.trim();
+    const apellido = document.getElementById("lastName").value.trim();
     const email = document.getElementById("email").value.trim();
     const pass = document.getElementById("password").value.trim();
     const confirm = document.getElementById("confirmPassword").value.trim();
 
-    if (!nombre || !email || !pass || !confirm) {
+    if (!nombre || !apellido || !email || !pass || !confirm) {
         alert("Todos los campos son obligatorios");
         return;
     }
@@ -15,24 +16,11 @@ document.getElementById("createForm").addEventListener("submit", async function(
         alert("Las contraseñas no coinciden");
         return;
     }
-
-  const partes = nombreCompleto.split(/\s+/).filter(p => p.length > 0);
-
-    let first_name = "";
-    let last_name = "";
-
-    if (partes.length === 1) {
-        first_name = partes[0];
-        last_name = ""; 
-    } else if (partes.length >= 2) {
-        first_name = partes[0];
-        last_name = partes.slice(1).join(" "); 
-    }
     
-   
+
     const payload = {
-        first_name: first_name,
-        last_name: last_name, 
+        first_name: nombre,
+        last_name: apellido, 
         email: email,
         password: pass,
     };
@@ -41,12 +29,7 @@ document.getElementById("createForm").addEventListener("submit", async function(
         const response = await fetch("http://localhost:8000/api/v1/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                email,
-                password: pass,
-                first_name,
-                last_name
-            })
+            body: JSON.stringify(payload)
         });
 
         if (!response.ok) {

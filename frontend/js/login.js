@@ -33,9 +33,23 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
         // Guardamos datos del usuario (Nombre y Email para las suscripciones)
         localStorage.setItem("first_name", data.first_name);
         localStorage.setItem("user_email", data.email); // Guardamos el email como ID para suscripciones
+        localStorage.setItem("user_role", data.role);
 
-        // Redirigir
-        window.location.href = "bienvenida.html";
+        switch (data.role) {
+            case "admin":
+                window.location.href = "bienvenidaAdmin.html"; 
+                break;
+
+            case "colaborador":
+                window.location.href = "bienvenidaColav.html"; 
+                break;
+
+            case "client":
+            default:
+                // Si es cliente o el rol no se reconoce, va a la bienvenida normal
+                window.location.href = "bienvenida.html";
+                break;
+        }
 
     } catch (error) {
         console.error(error);

@@ -1,10 +1,13 @@
 //  VERIFICAR SESIÓN
 const token = localStorage.getItem("token");
-const refreshToken = localStorage.getItem("refresh_token");
+// const refreshToken = localStorage.getItem("refresh_token"); // Opcional si no se usa aquí
 
 if (!token) {
     window.location.href = "login.html";
 }
+
+// URL DEL ENDPOINT (Ajustada al prefijo /api/v1)
+const CHANGE_PASSWORD_URL = "http://localhost:8000/api/v1/change-password";
 
 //  REFERENCIAS DEL FORMULARIO
 const form = document.querySelector("form");
@@ -27,14 +30,19 @@ form.addEventListener("submit", async (e) => {
         return;
     }
 
+    if (nueva.value.length < 8) {
+        alert("La nueva contraseña debe tener al menos 8 caracteres.");
+        return;
+    }
+
     const payload = {
         old_password: actual.value,
         new_password: nueva.value
     };
 
     try {
-        const res = await fetch("http://localhost:8000/users/change-password", {
-            method: "PUT",
+        const res = await fetch(CHANGE_PASSWORD_URL, {
+            method: "POST", // CORRECCIÓN: El backend espera POST
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
@@ -42,8 +50,17 @@ form.addEventListener("submit", async (e) => {
             body: JSON.stringify(payload)
         });
 
+        // Manejo de sesión expirada
+        if (res.status === 401) {
+            alert("Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
+            localStorage.clear();
+            window.location.href = "login.html";
+            return;
+        }
+
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
+            // Muestra el detalle del error (ej. "La contraseña actual es incorrecta")
             alert(err.detail || "No se pudo cambiar la contraseña.");
             return;
         }
@@ -54,6 +71,9 @@ form.addEventListener("submit", async (e) => {
         actual.value = "";
         nueva.value = "";
         confirmar.value = "";
+
+        // Opcional: Redirigir al perfil o cerrar sesión
+        window.location.href = "acount-settings.html";
 
     } catch (error) {
         console.error(error);

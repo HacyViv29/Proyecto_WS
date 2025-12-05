@@ -19,6 +19,7 @@ async function cargarContenidos() {
     try {
         console.log("Iniciando petición a /contenido/detalles...");
         
+        // NOTA: Asegúrate de que esta URL apunte a tu API Gateway o Backend correcto
         const res = await fetch("http://localhost:8000/contenido/detalles", {
             method: "GET",
             headers: {
@@ -65,21 +66,19 @@ async function cargarContenidos() {
         listaCompleta = keys.map(key => {
             const item = dataObjects[key];
             
-            // Determinar tipo
+            // Determinar tipo basado en la Key (LIB, REV, PER)
             let tipoItem = "otro";
             if (key.startsWith("LIB")) tipoItem = "libro";
             else if (key.startsWith("REV")) tipoItem = "revista";
             else if (key.startsWith("PER")) tipoItem = "periodico";
 
-            // CORRECCIÓN PRINCIPAL: Manejo seguro de campos faltantes o mal escritos
             return {
                 id: key,
-                // Busca "Título" O "Titulo" (con o sin acento)
                 titulo: item.Título || item.Titulo || "Sin Título", 
                 autor: item.Autor || "Desconocido",
                 editorial: item.Editorial || "Editorial desconocida",
                 fecha: item.Fecha || "s/f",
-                // Si no hay img, enviamos null para que el renderizador use la default
+                // Si 'img' viene del backend, lo usamos tal cual (asumiendo que es URL)
                 imagen: item.img || null,
                 tipo: tipoItem
             };
@@ -103,8 +102,10 @@ function renderizar(lista) {
     }
 
     lista.forEach(item => {
-        // Usar imagen real si existe, sino default
-        const imagenSrc = item.imagen ? `images/${item.imagen}` : 'images/default.jpg';
+        // CAMBIO IMPORTANTE: Lógica de Imagen Online
+        // 1. Si item.imagen tiene valor, lo usamos directo (sin 'images/').
+        // 2. Si es null, usamos un placeholder genérico de internet.
+        const imagenSrc = item.imagen ? item.imagen : 'https://placehold.co/400x600/0d6efd/ffffff?text=Sin+Portada';
 
         contenedor.innerHTML += `
             <div class="col">
@@ -114,7 +115,8 @@ function renderizar(lista) {
                          class="card-img-top" 
                          alt="${item.titulo}" 
                          style="height: 250px; object-fit: cover;"
-                         onerror="this.onerror=null; this.src='images/default.jpg';"> 
+                         /* Fallback: Si la URL de la imagen falla (404), carga este placeholder */
+                         onerror="this.onerror=null; this.src='https://placehold.co/400x600/e0e0e0/333333?text=No+Disponible';"> 
                     
                     <div class="card-body p-3 d-flex flex-column">
                         <h5 class="card-title fw-bold mb-0 text-truncate" title="${item.titulo}">${item.titulo}</h5>
@@ -154,3 +156,5 @@ document.getElementById("searchInput").addEventListener("input", e => {
     ));
 });
 
+// Cargar al inicio
+cargarContenidos();
