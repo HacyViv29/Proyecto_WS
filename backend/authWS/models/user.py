@@ -46,6 +46,25 @@ class User:
         return email.replace('.', ',')
 
     @classmethod
+    async def all(cls) -> list['User']:
+        # Pedimos el nodo raiz de la coleccion (ej. /Usuarios.json)
+        path = f"{Config.FIREBASE_COLLECTION}.json"
+        data = await firebase_request("GET", path)
+        
+        if not data:
+            return []
+            
+        users = []
+        # Firebase devuelve un diccionario { "id1": {datos}, "id2": {datos} }
+        for key, user_data in data.items():
+            # Creamos la instancia de User con los datos
+            if isinstance(user_data, dict):
+                user = cls(**user_data)
+                users.append(user)
+        
+        return users
+    
+    @classmethod
     def filter(cls, email: str = None, **kwargs):
         target_email = email if email else kwargs.get('email')
         return UserQuerySet(target_email)
@@ -95,3 +114,11 @@ class UserQuerySet:
             
         path = f"{Config.FIREBASE_COLLECTION}/{self.sanitized_key}.json"
         await firebase_request("PATCH", path, kwargs)
+        
+    async def delete(self):
+        if not self.sanitized_key:
+            return
+        
+        # Enviamos peticion DELETE a la ruta del usuario especifico
+        path = f"{Config.FIREBASE_COLLECTION}/{self.sanitized_key}.json"
+        await firebase_request("DELETE", path)

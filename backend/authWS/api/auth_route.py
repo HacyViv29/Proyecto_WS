@@ -1,7 +1,7 @@
 from fastapi.routing import APIRouter
 from fastapi import Depends, status, HTTPException
 from config.auth import verified_user, authorize, pwd_context, create_access_jwt, create_refresh_jwt
-from schemas.user import UserPost, UserLogin
+from schemas.user import UserPost, UserLogin, UserGet
 from models.user import User 
 import requests 
 import json
@@ -118,3 +118,63 @@ async def protected_data(user: User = Depends(verified_user)):
             'telephone': user.telephone
         }
     }
+
+@auth_router.get('/users', response_model=list[UserGet])
+async def get_all_users():
+    """
+    Retorna la lista de todos los usuarios registrados.
+    Usa UserGet para filtrar password y tokens de la respuesta.
+    """
+    users = await User.all()
+    return users
+
+@auth_router.put('/users/{email}', response_model=UserGet)
+async def update_user(email: str, body: UserUpdate):
+    """
+    Actualiza la informacion de un usuario.
+    Permite cambiar nombre, apellido, rol, telefono y password.
+    """
+    # 1. Verificar si el usuario existe
+    query = User.filter(email=email)
+    if not await query.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Usuario con email {email} no encontrado"
+        )
+    
+    # 2. Preparar datos para actualizar (excluyendo nulos)
+    update_data = body.model_dump(exclude_unset=True)
+    
+    # 3. Logica especial para la contraseña
+    # Si envian 'password', debemos hashearla y guardarla como 'password_hash'
+    if 'password' in update_data:
+        if update_data['password']: # Si no esta vacia
+            hashed_pw = pwd_context.hash(update_data['password'])
+            update_data['password_hash'] = hashed_pw
+        # Eliminamos el campo 'password' plano para no guardarlo asi en BD
+        del update_data['password']
+
+    # 4. Ejecutar la actualizacion en Firebase
+    await query.update(**update_data)
+    
+    # 5. Obtener y retornar el usuario actualizado
+    updated_user = await query.first()
+    return updated_user
+
+@auth_router.delete('/users/{email}')
+async def delete_user(email: str):
+    """
+    Elimina un usuario de la base de datos basandose en su email.
+    """
+    # 1. Verificar si el usuario existe
+    query = User.filter(email=email)
+    if not await query.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Usuario con email {email} no encontrado"
+        )
+    
+    # 2. Eliminar usuario
+    await query.delete()
+    
+    return {"message": "Usuario eliminado correctamente", "email": email}
