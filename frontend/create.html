@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conecta BUAP - Crear Cuenta</title>
+    <title>Gestión de Usuarios - Conecta BUAP</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
@@ -17,7 +17,7 @@
         }
 
         .bg-custom-blue {
-            background:linear-gradient(135deg, #64a1ad 0%, var(--buap-lighter-background) 100%);
+            background: linear-gradient(135deg, var(--buap-dark-background) 0%, var(--buap-lighter-background) 100%);
         }
 
         .card-login {
@@ -25,105 +25,81 @@
             border-radius: 20px; 
             max-width: 400px;
             width: 100%;
-            background-color: white; 
+            background-color: var(--buap-card-background);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
-        .icon-circle {
-            width: 80px;
-            height: 80px;
-            background-color: var(--buap-light-blue); 
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        .text-dark-blue { color: var(--buap-blue); }
+        .btn-primary {
+            background-color: var(--buap-blue);
+            border-color: var(--buap-blue);
         }
-
-        .icon-white { color: white; }
-        .text-dark-blue { color: var(--buap-blue) !important; }
-
-        .btn-login {
+        .btn-primary:hover {
             background-color: var(--buap-light-blue);
             border-color: var(--buap-light-blue);
-            padding: 10px 0;
-            font-weight: bold;
-            border-radius: 10px; 
-            transition: background-color 0.2s;
         }
-
-        .btn-login:hover {
-            background-color: #085599; 
-            border-color: #085599;
-        }
-
-        .input-group-text {
-            background-color: transparent;
-            border-right: none;
-        }
-
-        .form-control {
-            border-left: none;
-            padding-left: 0;
-        }
-
-        .input-group, .form-control {
-            border-radius: 8px !important;
-        }
-
-        .body-with-background {
-            background-image: url('images/prueba1.jpg'); 
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }
-
-        .contenedor-ancho-reducido {
-            max-width: 70%; 
-            margin: 0 auto; 
-        }
-
     </style>
 </head>
-<body class="body-with-background">
+<body class="bg-custom-blue d-flex align-items-center justify-content-center min-vh-100 p-3">
 
-    <div class="container d-flex justify-content-center align-items-center **vh-100** bg-custom-blue">
-        <div class="card card-login shadow-lg p-4">
-            <div class="card-body text-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 text-center mb-4">
+                 <h1 class="text-white fw-bold display-5"><i class="bi bi-book-half me-2"></i>Conecta BUAP</h1>
+                 <p class="text-white-50 fs-5">Plataforma de Contenidos Digitales</p>
+            </div>
 
-                <div class="icon-circle mx-auto mb-3">
-                    <i class="bi bi-book-fill icon-white fs-1"></i>
+            <div class="card card-login p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <h2 id="formTitle" class="fw-bold text-dark-blue">Crear Cuenta</h2>
+                    <p class="text-muted small">Ingresa los datos del usuario</p>
                 </div>
 
-                <h5 class="card-title fw-bold text-dark-blue">Crear Cuenta</h5>
-                <p class="card-subtitle mb-4 text-secondary small">Únete a Conecta BUAP</p>
-
-                <!-- FORMULARIO CON ID -->
                 <form id="createForm">
-
-                    <div class="row mb-3"> 
-                        <div class="col-md-6 text-start row-nomargin-bottom">
-                            <label for="name" class="form-label fw-bold small text-muted">Nombre</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                <input type="text" class="form-control" id="name" placeholder="Nombre">
-                            </div>
+                    
+                    <div id="adminFields" style="display: none;">
+                        <div class="mb-3 text-start">
+                            <label for="role" class="form-label fw-bold small text-muted">Rol de Usuario</label>
+                            <select class="form-select" id="role">
+                                <option value="client" selected>Usuario Cliente</option>
+                                <option value="collaborator">Colaborador / Editor</option>
+                                <option value="admin">Administrador</option>
+                            </select>
                         </div>
 
-                        <div class="col-md-6 text-start row-nomargin-bottom">
-                            <label for="lastName" class="form-label fw-bold small text-muted">Apellidos</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                <input type="text" class="form-control" id="lastName" placeholder="Apellidos">
+                        <div class="mb-3 text-start" id="companyField" style="display: none;">
+                            <label for="id_empresa" class="form-label fw-bold small text-muted">ID de la Empresa</label>
+                            <div class="input-icon-wrapper">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-building"></i></span>
+                                    <input type="text" class="form-control" id="id_empresa" placeholder="Ej. EMP-001">
+                                </div>
                             </div>
+                            <small class="text-muted" style="font-size: 0.75rem;">Requerido para colaboradores.</small>
+                        </div>
+                        <hr>
+                    </div>
+                    <div class="mb-3 text-start">
+                        <label for="name" class="form-label fw-bold small text-muted">Nombre</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" id="name" placeholder="Nombre(s)" required>
                         </div>
                     </div>
-                
+
+                    <div class="mb-3 text-start">
+                        <label for="lastName" class="form-label fw-bold small text-muted">Apellidos</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person-bounding-box"></i></span>
+                            <input type="text" class="form-control" id="lastName" placeholder="Apellidos" required>
+                        </div>
+                    </div>
 
                     <div class="mb-3 text-start">
                         <label for="email" class="form-label fw-bold small text-muted">Correo Electrónico</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                            <input type="email" class="form-control" id="email" placeholder="usuario@buap.mx">
+                            <input type="email" class="form-control" id="email" placeholder="ejemplo@correo.com" required>
                         </div>
                     </div>
 
@@ -131,7 +107,7 @@
                         <label for="password" class="form-label fw-bold small text-muted">Contraseña</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                            <input type="password" class="form-control" id="password" placeholder="Contraseña">
+                            <input type="password" class="form-control" id="password" placeholder="Mínimo 8 caracteres">
                         </div>
                     </div>
 
@@ -139,26 +115,31 @@
                         <label for="confirmPassword" class="form-label fw-bold small text-muted">Confirmar Contraseña</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirmar Contraseña">
+                            <input type="password" class="form-control" id="confirmPassword" placeholder="Repite la contraseña">
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-login w-100 mb-4">
+                    <button type="submit" id="btnSubmit" class="btn btn-primary btn-login w-100 mb-4">
                         Crear Cuenta
+                    </button>
+                    
+                    <button type="button" id="btnCancel" class="btn btn-secondary w-100 mb-4" style="display: none;">
+                        Cancelar / Regresar
                     </button>
                 </form>
 
-                <p class="mb-0 small">
-                    ¿Ya tienes cuenta? 
-                    <a href="login.html" class="text-decoration-none fw-bold text-dark-blue">Inicia sesión aquí</a>
-                </p>
+                <div id="loginLinkContainer">
+                    <p class="mb-0 small">
+                        ¿Ya tienes cuenta? 
+                        <a href="login.html" class="text-decoration-none fw-bold text-dark-blue">Inicia sesión aquí</a>
+                    </p>
+                </div>
 
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
     <script src="js/create.js"></script>
 
 </body>

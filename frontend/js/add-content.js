@@ -1,121 +1,162 @@
 // ==========================================
-//  AGREGAR CONTENIDO
+//  AGREGAR / EDITAR CONTENIDO (add-content.js)
 // ==========================================
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     
     // 1. VERIFICAR SESIÓN
     const token = localStorage.getItem("token");
     const refreshToken = localStorage.getItem("refresh_token");
-    const userRole = localStorage.getItem("user_role");
+    const userRole = (localStorage.getItem("user_role") || "").toLowerCase();
 
     if (!token) {
-        alert("Debes iniciar sesión para realizar esta acción.");
         window.location.href = "login.html";
         return;
     }
 
+    // 2. OBTENER PARÁMETROS DE URL (Detectar si es Edición)
+    const urlParams = new URLSearchParams(window.location.search);
+    const isbnToEdit = urlParams.get('isbn'); // Obtiene el ISBN si existe en la URL
+    const isEditMode = !!isbnToEdit;
+
+    // 3. REFERENCIAS AL DOM
+    const form = document.getElementById("contentForm");
+    const pageTitle = document.getElementById("pageTitle");
+    const btnText = document.getElementById("btnText");
     const publisherContainer = document.getElementById("publisher_container");
     
-    // Verificamos si el rol contiene "colab" (colaborador, collaborator)
+    // Inputs
+    const tipoInput = document.getElementById("tipo_contenido");
+    const tituloInput = document.getElementById("titulo");
+    const autorInput = document.getElementById("autor");
+    const editorialInput = document.getElementById("autor_editorial");
+    const descripcionInput = document.getElementById("descripcion");
+    const isbnInput = document.getElementById("isbn_issn");
+    const fechaInput = document.getElementById("fecha_publicacion");
+    const urlImgInput = document.getElementById("url_portada");
+    const publisherInput = document.getElementById("publisher");
+
+    // 4. CONFIGURACIÓN INICIAL (UI)
+    
+    // Mostrar campo empresa si es colaborador
     if (userRole.includes("colab") || userRole.includes("writ")) {
-        if (publisherContainer) {
-            publisherContainer.style.display = "block"; // Mostramos el campo
+        if (publisherContainer) publisherContainer.style.display = "block";
+    }
+
+    // Configurar textos según modo
+    if (isEditMode) {
+        console.log("Modo Edición Activado para:", isbnToEdit);
+        pageTitle.textContent = "Editar Contenido";
+        btnText.textContent = "Actualizar Contenido";
+        isbnInput.disabled = true; // No permitir cambiar la llave primaria (ISBN)
+        
+        // Cargar datos del backend
+        await cargarDatosParaEditar(isbnToEdit);
+    } else {
+        console.log("Modo Creación Activado");
+        pageTitle.textContent = "Nuevo Contenido";
+        btnText.textContent = "Guardar y Publicar";
+        isbnInput.disabled = false;
+    }
+
+
+    // ==========================================
+    //  FUNCIÓN: CARGAR DATOS (GET)
+    // ==========================================
+    async function cargarDatosParaEditar(isbn) {
+        try {
+            const res = await fetch(`http://localhost:8000/contenido/detalles/${isbn}`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "X-Refresh-Token": refreshToken || ""
+                }
+            });
+
+            if (!res.ok) throw new Error("No se encontró el contenido o error de conexión");
+
+            const json = await res.json();
+            // Postman: { status: "success", data: { isbn: "...", detalles: { ... } } }
+            const data = json.data?.detalles || {};
+            const isbnData = json.data?.isbn || isbn;
+
+            // Rellenar formulario
+            tituloInput.value = data.Título || data.Titulo || "";
+            autorInput.value = data.Autor || "";
+            editorialInput.value = data.Editorial || "";
+            descripcionInput.value = data.Descripcion || "";
+            fechaInput.value = data.Fecha || "";
+            urlImgInput.value = data.img || "";
+            isbnInput.value = isbnData; // Rellenar ISBN aunque esté disabled
+            
+            if (data.Publisher && publisherInput) {
+                publisherInput.value = data.Publisher;
+            }
+
+            // Inferir tipo para el select (Si el backend no devuelve 'tipo' explícito)
+            if (isbnData.startsWith("LIB")) tipoInput.value = "libros";
+            else if (isbnData.startsWith("REV")) tipoInput.value = "revistas";
+            else if (isbnData.startsWith("PER")) tipoInput.value = "periodicos";
+
+        } catch (err) {
+            console.error("Error cargando detalles:", err);
+            alert("Error cargando el contenido. Redirigiendo...");
+            window.history.back();
         }
     }
 
-    const dateInput = document.getElementById("fecha_publicacion");
-    
-    if (dateInput) {
-        dateInput.addEventListener("input", function(e) {
-            // 1. Eliminar cualquier caracter que no sea número
-            let value = this.value.replace(/\D/g, '');
-            
-            // 2. Limitar a 8 dígitos (2 mes + 2 dia + 4 año)
-            if (value.length > 8) value = value.slice(0, 8);
 
-            // 3. Agregar las barras '/'
-            if (value.length > 4) {
-                // Si hay más de 4 números (ej: 122520...), formato: 12/25/20...
-                value = value.slice(0, 2) + '/' + value.slice(2, 4) + '/' + value.slice(4);
-            } else if (value.length > 2) {
-                // Si hay más de 2 números (ej: 122...), formato: 12/2...
-                value = value.slice(0, 2) + '/' + value.slice(2);
-            }
-            
-            // 4. Asignar valor de vuelta al input
-            this.value = value;
-        });
-
-        // (Opcional) Evitar que el usuario borre la barra manualmente y rompa el formato
-        dateInput.addEventListener("keydown", function(e) {
-            if (e.key === "Backspace" && this.value.slice(-1) === "/") {
-                // Si borra una barra, borramos el número anterior también para mayor comodidad
-                // this.value = this.value.slice(0, -1); 
-            }
-        });
-    }
-
-    // 3. REFERENCIAS AL DOM
-    const form = document.querySelector("form");
-    const btnCancel = document.querySelector(".btn-secondary");
-
-    // 4. MANEJAR ENVÍO DEL FORMULARIO
+    // ==========================================
+    //  FUNCIÓN: GUARDAR (POST / PUT)
+    // ==========================================
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        // A) Capturar valores del formulario
-        const tipoInput = document.getElementById("tipo_contenido").value;
-        const titulo = document.getElementById("titulo").value.trim();
-        const autor = document.getElementById("autor").value.trim();
-        const editorial = document.getElementById("editorial").value.trim();
-        const isbn = document.getElementById("isbn").value.trim();
-        const fecha = document.getElementById("fecha_publicacion").value.trim();
-        const urlImg = document.getElementById("url_portada").value.trim();
-        let publisherValue = "Admin"; // Valor por defecto para administradores
-        const publisherInput = document.getElementById("publisher");
-            
-        // Si el campo es visible y tiene valor, lo usamos
-        if (publisherContainer.style.display !== "none" && publisherInput && publisherInput.value.trim() !== "") {
-            publisherValue = publisherInput.value.trim();
-        }
-
-        // B) Validaciones básicas
-        if (!tipoInput || !titulo || !isbn) {
-            alert("Los campos Tipo, Título e ISBN son obligatorios.");
+        // Validaciones básicas
+        if (!tituloInput.value.trim() || !isbnInput.value.trim()) {
+            alert("Título e ISBN son obligatorios");
             return;
         }
 
-        // C) Normalizar categoría para el backend
-        // El backend espera: "libros", "revistas" o "periodicos" (en plural y minúsculas)
-        let categoriaBackend = tipoInput.toLowerCase();
-        
-        // Mapeo simple para asegurar compatibilidad
+        // Normalizar categoría
+        let categoriaBackend = tipoInput.value.toLowerCase();
         if (categoriaBackend.includes("libro")) categoriaBackend = "libros";
         else if (categoriaBackend.includes("revista")) categoriaBackend = "revistas";
-        else if (categoriaBackend.includes("period") || categoriaBackend.includes("periód")) categoriaBackend = "periodicos";
+        else if (categoriaBackend.includes("period")) categoriaBackend = "periodicos";
 
-        // D) Construir el Payload (JSON) según Postman
+        // Construir Payload (Estructura según Postman)
         const payload = {
-            isbn: isbn,
             categoria: categoriaBackend,
-            nombre: titulo, // El backend usa este campo para la lista general
+            nombre: tituloInput.value.trim(),
             detalles: {
-                Titulo: titulo,
-                Autor: autor || "Varios Autores",
-                Editorial: editorial || "Sin Editorial",
-                Fecha: fecha || new Date().getFullYear().toString(),
-                img: urlImg,
-                Publisher: publisherValue
+                Titulo: tituloInput.value.trim(),
+                Autor: autorInput.value.trim() || "Varios",
+                Editorial: editorialInput.value.trim() || "Sin Editorial",
+                Descripcion: descripcionInput.value.trim(),
+                Fecha: fechaInput.value.trim() || new Date().getFullYear().toString(),
+                img: urlImgInput.value.trim(),
+                Publisher: (publisherInput && publisherInput.value) ? publisherInput.value : "Admin"
             }
         };
 
-        console.log("Enviando payload:", payload);
+        // Configurar URL y Método
+        let url, method;
+
+        if (isEditMode) {
+            // PUT http://localhost:8000/contenido/{isbn}
+            // Nota: En PUT, el ISBN va en la URL, el body lleva el resto.
+            url = `http://localhost:8000/contenido/${isbnToEdit}`;
+            method = "PUT";
+        } else {
+            // POST http://localhost:8000/contenido
+            // Nota: En POST, el ISBN va dentro del body
+            url = "http://localhost:8000/contenido";
+            method = "POST";
+            payload.isbn = isbnInput.value.trim();
+        }
 
         try {
-            // E) Petición POST al Gateway (Puerto 8000)
-            const response = await fetch("http://localhost:8000/contenido", {
-                method: "POST",
+            const response = await fetch(url, {
+                method: method,
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`,
@@ -124,42 +165,35 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify(payload)
             });
 
-            // F) Manejo de respuesta
             if (response.status === 401) {
                 alert("Tu sesión ha expirado.");
-                localStorage.clear();
                 window.location.href = "login.html";
                 return;
             }
 
-            const data = await response.json();
+            const result = await response.json();
 
             if (!response.ok) {
-                // Mostrar error específico del backend (ej. "ISBN ya existe")
-                throw new Error(data.detail || data.message || "Error al guardar");
+                throw new Error(result.detail || result.message || "Error al guardar");
             }
 
-            // G) Éxito
-            alert("¡Contenido agregado exitosamente!");
-            
-            // Redirigir según el rol (opcional, o volver atrás)
-            const rol = localStorage.getItem("user_role");
-            if (rol && rol.toLowerCase().includes("admin")) {
-                window.location.href = "panel-admin.html";
-            } else {
-                window.location.href = "panel-colaborador.html";
-            }
+            // Éxito
+            alert(isEditMode ? "Contenido actualizado correctamente" : "Contenido creado correctamente");
+            window.history.back(); // Volver al panel
 
         } catch (error) {
             console.error("Error:", error);
-            alert("Error al guardar: " + error.message);
+            alert("Error: " + error.message);
         }
     });
 
-    // 4. BOTÓN CANCELAR
-    if (btnCancel) {
-        btnCancel.addEventListener("click", () => {
-            window.history.back();
-        });
-    }
+    // Máscara de fecha simple
+    fechaInput.addEventListener("input", function(e) {
+        let val = this.value.replace(/\D/g, '');
+        if (val.length > 8) val = val.slice(0, 8);
+        if (val.length > 4) val = val.slice(0, 2) + '/' + val.slice(2, 4) + '/' + val.slice(4);
+        else if (val.length > 2) val = val.slice(0, 2) + '/' + val.slice(2);
+        this.value = val;
+    });
+
 });
