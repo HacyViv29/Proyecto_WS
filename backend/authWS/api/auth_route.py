@@ -1,7 +1,7 @@
 from fastapi.routing import APIRouter
 from fastapi import Depends, status, HTTPException
 from config.auth import verified_user, authorize, pwd_context, create_access_jwt, create_refresh_jwt
-from schemas.user import UserPost, UserLogin, UserGet, UserUpdate
+from schemas.user import UserPost, UserLogin, UserGet, UserUpdate, UserChangePassword
 from models.user import User 
 import requests 
 import json
@@ -162,6 +162,39 @@ async def update_user(email: str, body: UserUpdate):
     # 5. Obtener y retornar el usuario actualizado
     updated_user = await query.first()
     return updated_user
+
+@auth_router.post('/change-password')
+async def change_password(body: UserChangePassword, user_data: dict = Depends(verified_user)):
+    """
+    Cambia la contraseña verificando primero la contraseña actual.
+    Requiere token de autenticación (Header Authorization).
+    """
+    # 1. Obtenemos el email del usuario logueado (viene del token validado por verified_user)
+    # Nota: verified_user devuelve el objeto User, así que usamos user_data.email
+    email = user_data.email
+    
+    # 2. Buscamos al usuario en BD para obtener su hash actual
+    user = await User.filter(email=email).first()
+    if not user or not user.password_hash:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
+
+    # 3. VERIFICAR: ¿La contraseña antigua coincide?
+    if not pwd_context.verify(body.old_password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La contraseña actual es incorrecta"
+        )
+
+    # 4. HASHEAR: Encriptar la nueva contraseña
+    new_hash = pwd_context.hash(body.new_password)
+
+    # 5. ACTUALIZAR: Guardar en Firebase
+    await User.filter(email=email).update(password_hash=new_hash)
+
+    return {"message": "Contraseña actualizada correctamente"}
 
 @auth_router.delete('/users/{email}')
 async def delete_user(email: str):

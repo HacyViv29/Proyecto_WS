@@ -35,3 +35,7 @@ class UserUpdate(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+    
+class UserChangePassword(BaseModel):
+    old_password: str
+    new_password: str = Field(min_length=8, max_length=100)
