@@ -9,6 +9,7 @@ class UserGet(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     role: Optional[str] = None
+    id_empresa: Optional[str] = None
     
     class Config:
         from_attributes = True 
@@ -23,6 +24,7 @@ class UserPost(BaseModel):
     last_name: Optional[str] = Field(None, max_length=50)
     password_hash: str = Field(alias='password', min_length=8, max_length=100)
     role: Optional[str] = Field('client')
+    id_empresa: Optional[str] = None
 
 class UserUpdate(BaseModel):
     first_name: Optional[str] = Field(None, max_length=50)
@@ -31,6 +33,7 @@ class UserUpdate(BaseModel):
     telephone: Optional[str] = None
     # Permitimos actualizar password opcionalmente
     password: Optional[str] = Field(None, min_length=8, max_length=100)
+    id_empresa: Optional[str] = None
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -39,3 +42,8 @@ class UserLogin(BaseModel):
 class UserChangePassword(BaseModel):
     old_password: str
     new_password: str = Field(min_length=8, max_length=100)
+    
+class UserCompanyStatus(BaseModel):
+    email: str
+    pertenece_a_empresa: bool
+    id_empresa: Optional[str] = None

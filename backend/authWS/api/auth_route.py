@@ -1,7 +1,7 @@
 from fastapi.routing import APIRouter
 from fastapi import Depends, status, HTTPException
 from config.auth import verified_user, authorize, pwd_context, create_access_jwt, create_refresh_jwt
-from schemas.user import UserPost, UserLogin, UserGet, UserUpdate, UserChangePassword
+from schemas.user import UserPost, UserLogin, UserGet, UserUpdate, UserChangePassword, UserCompanyStatus
 from models.user import User 
 import requests 
 import json
@@ -27,7 +27,7 @@ async def register(body: UserPost):
             detail="El correo ya esta registrado."
         )
         
-    # 3. Crear usuario (Sin ID numerico guardado)
+    # 3. Crear usuario (Ahora incluye id_empresa si viene en data)
     user_object = await User.create(**data)
     
     sanitized_email = user_object.id
@@ -48,7 +48,8 @@ async def register(body: UserPost):
         webhook_payload = {
             "accion": "nuevo_usuario",
             "categoria": "usuarios",
-            "nuevo_usuario": sanitized_email
+            "nuevo_usuario": sanitized_email,
+            "id_empresa": getattr(user_object, 'id_empresa', None) # Enviamos empresa si existe
         }
         requests.post(
             WEBHOOK_URL,
@@ -59,11 +60,12 @@ async def register(body: UserPost):
     except Exception as e:
         print(f"[Error] Conectando con Webhook: {e}")
 
-    # 6. Retorno (user_id es el correo sanitizado)
+    # 6. Retorno
     return {
         "message": "Usuario creado exitosamente", 
         "user_id": user_object.id, 
-        "email": user_object.email
+        "email": user_object.email,
+        "id_empresa": getattr(user_object, 'id_empresa', None)
     }
 
 @auth_router.post('/login')
@@ -107,6 +109,20 @@ async def login(body: UserLogin):
 async def refresh(token_data: dict = Depends(authorize)):
     return token_data
 
+@auth_router.get('/users/detail/{user_id}', response_model=UserGet)
+async def get_user_by_id(user_id: str):
+    """
+    Obtiene la información detallada de un usuario buscando por su ID (ej: correo sanitizado).
+    """
+    user = await User.filter(id=user_id).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Usuario con ID {user_id} no encontrado"
+        )
+    return user
+
 @auth_router.get('/data')
 async def protected_data(user: User = Depends(verified_user)):
     return {
@@ -134,11 +150,13 @@ async def get_all_users():
 async def update_user(email: str, body: UserUpdate):
     """
     Actualiza la informacion de un usuario.
-    Permite cambiar nombre, apellido, rol, telefono y password.
+    Permite cambiar nombre, apellido, rol, telefono, password y empresa.
     """
     # 1. Verificar si el usuario existe
     query = User.filter(email=email)
-    if not await query.exists():
+    user_obj = await query.first()
+    
+    if not user_obj:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Usuario con email {email} no encontrado"
@@ -146,14 +164,23 @@ async def update_user(email: str, body: UserUpdate):
     
     # 2. Preparar datos para actualizar (excluyendo nulos)
     update_data = body.model_dump(exclude_unset=True)
+
+    # Regla de Negocio: Validar cambio de empresa
+    if 'id_empresa' in update_data:
+        current_empresa = getattr(user_obj, 'id_empresa', None)
+        new_empresa = update_data['id_empresa']
+        
+        # Si ya tiene una empresa Y es diferente a la nueva
+        if current_empresa and new_empresa and current_empresa != new_empresa:
+             # Aquí decides: Lanzar error (estricto) o permitirlo (flexible). 
+             # Por defecto en sistemas de RRHH se suele prohibir el cambio directo sin desvincular.
+             pass 
     
     # 3. Logica especial para la contraseña
-    # Si envian 'password', debemos hashearla y guardarla como 'password_hash'
     if 'password' in update_data:
-        if update_data['password']: # Si no esta vacia
+        if update_data['password']:
             hashed_pw = pwd_context.hash(update_data['password'])
             update_data['password_hash'] = hashed_pw
-        # Eliminamos el campo 'password' plano para no guardarlo asi en BD
         del update_data['password']
 
     # 4. Ejecutar la actualizacion en Firebase
@@ -213,3 +240,30 @@ async def delete_user(email: str):
     await query.delete()
     
     return {"message": "Usuario eliminado correctamente", "email": email}
+
+@auth_router.get("/users/check-company/{email}", response_model=UserCompanyStatus)
+async def check_user_company(email: str):
+    """
+    Verifica si un correo ya está asociado a alguna empresa.
+    """
+    try:
+        user = await User.filter(email=email).first()
+        
+        if user and getattr(user, 'id_empresa', None):
+            return {
+                "email": email,
+                "pertenece_a_empresa": True,
+                "id_empresa": user.id_empresa
+            }
+        
+        return {
+            "email": email,
+            "pertenece_a_empresa": False,
+            "id_empresa": None
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al consultar empresa: {str(e)}"
+        )

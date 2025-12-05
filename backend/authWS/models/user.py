@@ -36,6 +36,8 @@ class User:
         self.role = kwargs.get('role', 'client') 
         self.telephone = kwargs.get('telephone', '')
         
+        self.id_empresa = kwargs.get('id_empresa', None)
+        
         # El ID logico sera el correo sanitizado (la clave en Firebase)
         # No se guarda en BD, se calcula al vuelo
         self.id = self._sanitize_email(self.email) if self.email else None
@@ -66,8 +68,12 @@ class User:
     
     @classmethod
     def filter(cls, email: str = None, **kwargs):
-        target_email = email if email else kwargs.get('email')
-        return UserQuerySet(target_email)
+        target = email if email else kwargs.get('email')
+        
+        if not target and 'id' in kwargs:
+            target = kwargs.get('id')
+        
+        return UserQuerySet(target)
 
     @classmethod
     async def create(cls, **kwargs):
