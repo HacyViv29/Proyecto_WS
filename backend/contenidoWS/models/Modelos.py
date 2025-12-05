@@ -3,11 +3,12 @@ from typing import Dict, List, Optional, Any
 
 class Detalles(BaseModel):
     Autor: Optional[str] = None
-    Descuento: Optional[int] = None
+    Descripcion: Optional[str] = None
     Editorial: Optional[str] = None
     Fecha: Optional[str] = None
-    Precio: Optional[float] = None
+    Publisher: Optional[str] = None
     Titulo: Optional[str] = None
+    img: Optional[str] = None
 
 class ProductoCreate(BaseModel):
     isbn: str
